@@ -1,0 +1,2 @@
+# miners
+Opentensor Miners
