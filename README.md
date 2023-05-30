@@ -19,9 +19,9 @@ with openminers.TemplateMiner():
 pytest -s tests/
 ```
 
-# Running miners
+# Running benchmarks
 ```bash
-import openminers
+python benchmarks/template.py
 ```
 
 # TODO
