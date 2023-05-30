@@ -29,7 +29,8 @@ import openminers
 [x] Add setup.py
 [x] Add template text_to_text miner
 [x] Add template text_to_text forward tests 
-[ ] Add benchmarks
+[x] Add benchmarks
+[ ] Add Wandb to miner
 [ ] Add more miners
 [ ] Advance blacklist function
 [ ] Advance priority function
