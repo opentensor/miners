@@ -24,7 +24,7 @@ setup(
     description = 'Openminers is a collection of open source miners for bittensor',
     url = 'https://github.com/opentensor/bittensor',
     author = 'bittensor.com',
-    packages = [ 'miners' ],
+    packages = [ 'openminers' ],
     include_package_data = True,
     author_email = '',
     license = 'MIT',
