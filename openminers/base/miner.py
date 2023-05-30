@@ -21,8 +21,7 @@ import torch
 import argparse
 import threading
 import openminers
-import bittensor
- as bt
+import bittensor as bt
 
 from abc import ABC, abstractmethod
 from typing import List, Dict, Union, Tuple

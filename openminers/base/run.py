@@ -18,8 +18,7 @@ import time
 import torch
 import datetime
 import openminers
-import bittensor
- as bt
+import bittensor as bt
 
 def run( self ):
     bt.logging.info( f"Starting miner with config {self.config}" )

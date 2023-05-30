@@ -18,8 +18,7 @@
 import time
 import json
 import openminers
-import bittensor
- as bt
+import bittensor as bt
 from typing import List, Optional
 
 class MockSubtensor:

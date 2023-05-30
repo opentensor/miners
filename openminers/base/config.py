@@ -18,8 +18,7 @@
 import os
 import argparse
 import openminers
-import bittensor
- as bt
+import bittensor as bt
 
 def add_args( cls, parser: argparse.ArgumentParser ):
     # Call add args to on sub class.

@@ -17,9 +17,7 @@
 
 import json
 import openminers
-import openminers
-import bittensor
- as bt
+import bittensor as bt
 from typing import List, Dict
 
 bt.trace()

@@ -16,8 +16,7 @@
 # DEALINGS IN THE SOFTWARE.
 
 import openminers
-import bittensor
- as bt
+import bittensor as bt
 from typing import List, Dict, Union, Tuple
 
 def blacklist( self, forward_call: "bt.TextPromptingForwardCall" ) -> Union[ Tuple[bool, str], bool ]:

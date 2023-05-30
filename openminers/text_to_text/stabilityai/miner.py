@@ -98,8 +98,7 @@ class StabilityAIMiner( openminers.BaseMiner):
         return self.pipe( history )[0]['generated_text'].split(':')[-1].replace( str( history ), "")
 
 if __name__ == "__main__":  
-    miner = StabilityAIMiner()
-    with miner:
+    with StabilityAIMiner():
         while True:
             print ('running...', time.time())
             time.sleep(1)

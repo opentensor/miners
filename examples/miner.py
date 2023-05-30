@@ -18,8 +18,7 @@
 import openminers
 import argparse
 import openminers
-import bittensor
- as bt
+import bittensor as bt
 from typing import List, Dict, Union, Tuple
 
 class TemplateMiner( openminers.BaseMiner ):

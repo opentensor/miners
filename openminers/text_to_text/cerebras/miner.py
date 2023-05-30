@@ -15,6 +15,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
+import time
 import argparse
 import openminers
 import bittensor
@@ -33,11 +34,9 @@ class CerebrasMiner( openminers.BaseMiner ):
 
     def __init__( self, *args, **kwargs):
         super( CerebrasMiner, self ).__init__( *args, **kwargs )
-
         bittensor.logging.info( "Loading Cerebras GPT {} model...".format( self.config.cerebras.model_size) )
         model = AutoModelForCausalLM.from_pretrained( "cerebras/Cerebras-GPT-{}".format( self.config.cerebras.model_size) )
         tokenizer = AutoTokenizer.from_pretrained( "cerebras/Cerebras-GPT-{}".format( self.config.cerebras.model_size)  )
-
         self.pipe = pipeline(
             "text-generation",
             model = model,
@@ -64,6 +63,8 @@ class CerebrasMiner( openminers.BaseMiner ):
         history = self._process_history(messages)
         return self.pipe( history )[0]['generated_text'].split(':')[-1].replace( str( history ), "")
 
-if __name__ == "__main__":
-    bittensor.utils.version_checking()
-    CerebrasMiner().run()
+if __name__ == "__main__":  
+    with CerebrasMiner():
+        while True:
+            print ('running...', time.time())
+            time.sleep(1)

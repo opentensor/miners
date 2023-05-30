@@ -35,3 +35,5 @@ python benchmarks/template.py
 - [ ] Advance blacklist function
 - [ ] Advance priority function
 - [ ] Advance telemetry through wandb
+- [ ] Add tests to miners
+- [ ] Add benchmarks to miners

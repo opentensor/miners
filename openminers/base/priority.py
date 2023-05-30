@@ -16,8 +16,7 @@
 # DEALINGS IN THE SOFTWARE.
 
 import openminers
-import bittensor
- as bt
+import bittensor as bt
 
 def priority( self, forward_call: "bt.TextPromptingForwardCall" ) -> float:
     return 0.0

@@ -73,8 +73,7 @@ class CohereMiner( openminers.BaseMiner ):
         return self.model( history )
 
 if __name__ == "__main__":  
-    miner = CohereMiner()
-    with miner:
+    with CohereMiner():
         while True:
             print ('running...', time.time())
             time.sleep(1)

@@ -23,7 +23,7 @@ import bittensor
 from typing import List, Dict, Any, Optional
 from langchain.llms import GooseAI
 
-class GooseAIMiner( openminers.BaseMiner ):
+class GooseMiner( openminers.BaseMiner ):
 
     @classmethod
     def add_args( cls, parser: argparse.ArgumentParser ):
@@ -40,7 +40,7 @@ class GooseAIMiner( openminers.BaseMiner ):
         parser.add_argument("--gooseai.logit_bias", type=Optional[Dict[str, float]], default=dict(), help="Adjust the probability of specific tokens being generated")
 
     def __init__( self, *args, **kwargs):
-        super( GooseAIMiner, self ).__init__( *args, **kwargs )
+        super( GooseMiner, self ).__init__( *args, **kwargs )
         model_kwargs = {
             'model': self.config.gooseai.model_name,
             'n_ctx': self.config.gooseai.max_tokens,
@@ -71,10 +71,8 @@ class GooseAIMiner( openminers.BaseMiner ):
         bittensor.logging.info('response', str( resp ))
         return resp
 
-
 if __name__ == "__main__":  
-    miner = GooseAIMiner()
-    with miner:
+    with GooseMiner():
         while True:
             print ('running...', time.time())
             time.sleep(1)
