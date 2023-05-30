@@ -15,15 +15,13 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
-import torch
+import time
 import openai
 import argparse
 import openminers
-import bittensor
-
 from typing import List, Dict
 
-class OpenAIMiner( openminers.BaseMiner):
+class OpenAIMiner( openminers.BaseMiner ):
 
     @classmethod
     def add_args( cls, parser: argparse.ArgumentParser ):
@@ -54,6 +52,8 @@ class OpenAIMiner( openminers.BaseMiner):
         )['choices'][0]['message']['content']
         return resp
 
-if __name__ == "__main__":
-    bittensor.utils.version_checking()
-    OpenAIMiner().run()
+if __name__ == "__main__":  
+    with OpenAIMiner():
+        while True:
+            print ('running...', time.time())
+            time.sleep(1)

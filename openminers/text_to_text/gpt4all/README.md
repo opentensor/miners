@@ -26,16 +26,16 @@ convert the model from the old format to the new format with [./migrate-ggml-202
 
 # Full Usage
 ```
-usage: neuron.py [-h] --gpt4all.model GPT4ALL.MODEL [--gpt4all.n_ctx GPT4ALL.N_CTX] [--gpt4all.n_parts GPT4ALL.N_PARTS]
+usage: miner.py [-h] --gpt4all.model GPT4ALL.MODEL [--gpt4all.n_ctx GPT4ALL.N_CTX] [--gpt4all.n_parts GPT4ALL.N_PARTS]
                  [--gpt4all.seed GPT4ALL.SEED] [--gpt4all.f16_kv] [--gpt4all.logits_all] [--gpt4all.vocab_only] [--gpt4all.use_mlock]
                  [--gpt4all.embedding] [--gpt4all.n_threads GPT4ALL.N_THREADS] [--gpt4all.n_predict GPT4ALL.N_PREDICT]
                  [--gpt4all.temp GPT4ALL.TEMP] [--gpt4all.top_p GPT4ALL.TOP_P] [--gpt4all.top_k GPT4ALL.TOP_K] [--gpt4all.echo]
                  [--gpt4all.stop GPT4ALL.STOP] [--gpt4all.repeat_last_n GPT4ALL.REPEAT_LAST_N]
                  [--gpt4all.repeat_penalty GPT4ALL.REPEAT_PENALTY] [--gpt4all.n_batch GPT4ALL.N_BATCH] [--gpt4all.streaming]
-                 [--netuid NETUID] [--neuron.name NEURON.NAME] [--neuron.blocks_per_epoch NEURON.BLOCKS_PER_EPOCH] [--neuron.no_set_weights]
-                 [--neuron.max_batch_size NEURON.MAX_BATCH_SIZE] [--neuron.max_sequence_len NEURON.MAX_SEQUENCE_LEN]
-                 [--neuron.blacklist.hotkeys [NEURON.BLACKLIST.HOTKEYS ...]] [--neuron.blacklist.allow_non_registered]
-                 [--neuron.blacklist.default_stake NEURON.BLACKLIST.DEFAULT_STAKE] [--neuron.default_priority NEURON.DEFAULT_PRIORITY]
+                 [--netuid NETUID] [--miner.name NEURON.NAME] [--miner.blocks_per_epoch NEURON.BLOCKS_PER_EPOCH] [--miner.no_set_weights]
+                 [--miner.max_batch_size NEURON.MAX_BATCH_SIZE] [--miner.max_sequence_len NEURON.MAX_SEQUENCE_LEN]
+                 [--miner.blacklist.hotkeys [NEURON.BLACKLIST.HOTKEYS ...]] [--miner.blacklist.allow_non_registered]
+                 [--miner.blacklist.default_stake NEURON.BLACKLIST.DEFAULT_STAKE] [--miner.default_priority NEURON.DEFAULT_PRIORITY]
                  [--wallet.name WALLET.NAME] [--wallet.hotkey WALLET.HOTKEY] [--wallet.path WALLET.PATH] [--wallet._mock]
                  [--wallet.reregister WALLET.REREGISTER] [--axon.priority.max_workers AXON.PRIORITY.MAX_WORKERS]
                  [--axon.priority.maxsize AXON.PRIORITY.MAXSIZE] [--axon.port AXON.PORT] [--axon.ip AXON.IP]
@@ -85,23 +85,23 @@ optional arguments:
                         Batch size for prompt processing.
   --gpt4all.streaming   Whether to stream the results or not.
   --netuid NETUID       Subnet netuid
-  --neuron.name NEURON.NAME
+  --miner.name NEURON.NAME
                         Trials for this miner go in miner.root / (wallet_cold - wallet_hot) / miner.name
-  --neuron.blocks_per_epoch NEURON.BLOCKS_PER_EPOCH
+  --miner.blocks_per_epoch NEURON.BLOCKS_PER_EPOCH
                         Blocks until the miner sets weights on chain
-  --neuron.no_set_weights
+  --miner.no_set_weights
                         If True, the model does not set weights.
-  --neuron.max_batch_size NEURON.MAX_BATCH_SIZE
+  --miner.max_batch_size NEURON.MAX_BATCH_SIZE
                         The maximum batch size for forward requests.
-  --neuron.max_sequence_len NEURON.MAX_SEQUENCE_LEN
+  --miner.max_sequence_len NEURON.MAX_SEQUENCE_LEN
                         The maximum sequence length for forward requests.
-  --neuron.blacklist.hotkeys [NEURON.BLACKLIST.HOTKEYS ...]
+  --miner.blacklist.hotkeys [NEURON.BLACKLIST.HOTKEYS ...]
                         To blacklist certain hotkeys
-  --neuron.blacklist.allow_non_registered
+  --miner.blacklist.allow_non_registered
                         If True, the miner will allow non-registered hotkeys to mine.
-  --neuron.blacklist.default_stake NEURON.BLACKLIST.DEFAULT_STAKE
+  --miner.blacklist.default_stake NEURON.BLACKLIST.DEFAULT_STAKE
                         Set default stake for miners.
-  --neuron.default_priority NEURON.DEFAULT_PRIORITY
+  --miner.default_priority NEURON.DEFAULT_PRIORITY
                         Set default priority for miners.
   --wallet.name WALLET.NAME
                         The name of the wallet to unlock for running bittensor (name mock is reserved for mocking this wallet)

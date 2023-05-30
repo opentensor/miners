@@ -10,11 +10,11 @@ python3 openminers/text_to_text/miner/robertmyers/miner.py
 
 # Full Usage
 ```
-usage: miner.py [-h] [--robertmyers.max_new_tokens ROBERTMYERS.MAX_NEW_TOKENS] [--netuid NETUID] [--neuron.name NEURON.NAME]
-                 [--neuron.blocks_per_epoch NEURON.BLOCKS_PER_EPOCH] [--neuron.no_set_weights]
-                 [--neuron.max_batch_size NEURON.MAX_BATCH_SIZE] [--neuron.max_sequence_len NEURON.MAX_SEQUENCE_LEN]
-                 [--neuron.blacklist.hotkeys [NEURON.BLACKLIST.HOTKEYS ...]] [--neuron.blacklist.allow_non_registered]
-                 [--neuron.blacklist.default_stake NEURON.BLACKLIST.DEFAULT_STAKE] [--neuron.default_priority NEURON.DEFAULT_PRIORITY]
+usage: miner.py [-h] [--robertmyers.max_new_tokens ROBERTMYERS.MAX_NEW_TOKENS] [--netuid NETUID] [--miner.name NEURON.NAME]
+                 [--miner.blocks_per_epoch NEURON.BLOCKS_PER_EPOCH] [--miner.no_set_weights]
+                 [--miner.max_batch_size NEURON.MAX_BATCH_SIZE] [--miner.max_sequence_len NEURON.MAX_SEQUENCE_LEN]
+                 [--miner.blacklist.hotkeys [NEURON.BLACKLIST.HOTKEYS ...]] [--miner.blacklist.allow_non_registered]
+                 [--miner.blacklist.default_stake NEURON.BLACKLIST.DEFAULT_STAKE] [--miner.default_priority NEURON.DEFAULT_PRIORITY]
                  [--wallet.name WALLET.NAME] [--wallet.hotkey WALLET.HOTKEY] [--wallet.path WALLET.PATH] [--wallet._mock]
                  [--wallet.reregister WALLET.REREGISTER] [--axon.priority.max_workers AXON.PRIORITY.MAX_WORKERS]
                  [--axon.priority.maxsize AXON.PRIORITY.MAXSIZE] [--axon.port AXON.PORT] [--axon.ip AXON.IP]
@@ -33,23 +33,23 @@ optional arguments:
   --robertmyers.max_new_tokens ROBERTMYERS.MAX_NEW_TOKENS
                         Max tokens for model output.
   --netuid NETUID       Subnet netuid
-  --neuron.name NEURON.NAME
+  --miner.name NEURON.NAME
                         Trials for this miner go in miner.root / (wallet_cold - wallet_hot) / miner.name
-  --neuron.blocks_per_epoch NEURON.BLOCKS_PER_EPOCH
+  --miner.blocks_per_epoch NEURON.BLOCKS_PER_EPOCH
                         Blocks until the miner sets weights on chain
-  --neuron.no_set_weights
+  --miner.no_set_weights
                         If True, the model does not set weights.
-  --neuron.max_batch_size NEURON.MAX_BATCH_SIZE
+  --miner.max_batch_size NEURON.MAX_BATCH_SIZE
                         The maximum batch size for forward requests.
-  --neuron.max_sequence_len NEURON.MAX_SEQUENCE_LEN
+  --miner.max_sequence_len NEURON.MAX_SEQUENCE_LEN
                         The maximum sequence length for forward requests.
-  --neuron.blacklist.hotkeys [NEURON.BLACKLIST.HOTKEYS ...]
+  --miner.blacklist.hotkeys [NEURON.BLACKLIST.HOTKEYS ...]
                         To blacklist certain hotkeys
-  --neuron.blacklist.allow_non_registered
+  --miner.blacklist.allow_non_registered
                         If True, the miner will allow non-registered hotkeys to mine.
-  --neuron.blacklist.default_stake NEURON.BLACKLIST.DEFAULT_STAKE
+  --miner.blacklist.default_stake NEURON.BLACKLIST.DEFAULT_STAKE
                         Set default stake for miners.
-  --neuron.default_priority NEURON.DEFAULT_PRIORITY
+  --miner.default_priority NEURON.DEFAULT_PRIORITY
                         Set default priority for miners.
   --wallet.name WALLET.NAME
                         The name of the wallet to unlock for running bittensor (name mock is reserved for mocking this wallet)
