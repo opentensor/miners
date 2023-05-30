@@ -15,6 +15,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
+import time
 import torch
 import argparse
 import openminers
@@ -76,7 +77,10 @@ class PythiaMiner( openminers.BaseMiner ):
         bittensor.logging.debug("Message: " + str(messages).replace("<","-").replace(">","-"))
         bittensor.logging.debug("Generation: " + str(generation).replace("<","-").replace(">","-"))
         return generation
-
+    
+    
 if __name__ == "__main__":
-    bittensor.utils.version_checking()
-    PythiaMiner().run()
+    with PythiaMiner():
+        while True:
+            print ('running...', time.time())
+            time.sleep(1)

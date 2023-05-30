@@ -15,17 +15,14 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
-# General.
-import json
+import time
 import torch
 import argparse
 import openminers
-import bittensor
-
 from typing import List, Dict
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 
-class RobertMyersMiner( openminers.BaseMiner):
+class RobertMyersMiner( openminers.BaseMiner ):
 
     @classmethod
     def add_args( cls, parser: argparse.ArgumentParser ):
@@ -37,7 +34,6 @@ class RobertMyersMiner( openminers.BaseMiner):
         self.model = AutoModelForCausalLM.from_pretrained(  "robertmyers/bpt-sft", torch_dtype=torch.float16 )
         self.model.to( "cuda" )
         self.pipe = pipeline( "text-generation", self.model, tokenizer=tokenizer, device = 0, max_new_tokens = 256 )
-        print("Model loaded")
 
     @staticmethod
     def _process_history( history: List[ Dict[str, str] ] ) -> str:
@@ -56,6 +52,9 @@ class RobertMyersMiner( openminers.BaseMiner):
         resp = self.pipe( history )[0]['generated_text'].split(':')[-1].replace( str( history ), "")
         return resp
 
-if __name__ == "__main__":
-    bittensor.utils.version_checking()
-    RobertMyersMiner().run()
+if __name__ == "__main__":  
+    miner = RobertMyersMiner()
+    with miner:
+        while True:
+            print ('running...', time.time())
+            time.sleep(1)

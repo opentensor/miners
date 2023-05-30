@@ -15,13 +15,11 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
-
-# General.
+import time
 import torch
 import argparse
 import openminers
 import bittensor
-
 from typing import List, Dict
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline, StoppingCriteria, StoppingCriteriaList
 
@@ -35,10 +33,6 @@ class StopOnTokens(StoppingCriteria):
         return False
 
 class StabilityAIMiner( openminers.BaseMiner):
-
-    @classmethod
-    def check_config( cls, config: 'bittensor.Config' ):
-        assert config.stabilityai.api_key != None, 'the miner requires passing --stabilityai.api_key as an argument of the config.'
 
     @classmethod
     def add_args( cls, parser: argparse.ArgumentParser ):
@@ -103,7 +97,9 @@ class StabilityAIMiner( openminers.BaseMiner):
         history = self._process_history(messages)
         return self.pipe( history )[0]['generated_text'].split(':')[-1].replace( str( history ), "")
 
-
-if __name__ == "__main__":
-    bittensor.utils.version_checking()
-    StabilityAIMiner().run()
+if __name__ == "__main__":  
+    miner = StabilityAIMiner()
+    with miner:
+        while True:
+            print ('running...', time.time())
+            time.sleep(1)

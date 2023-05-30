@@ -15,6 +15,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
+import time
 import argparse
 import openminers
 import bittensor
@@ -66,6 +67,9 @@ class AlephAlphaMiner( openminers.BaseMiner):
         bittensor.logging.info('response', str(resp))
         return resp
 
-if __name__ == "__main__":
-    bittensor.utils.version_checking()
-    AlephAlphaMiner().run()
+if __name__ == "__main__":  
+    miner = AlephAlphaMiner()
+    with miner:
+        while True:
+            print ('running...', time.time())
+            time.sleep(1)

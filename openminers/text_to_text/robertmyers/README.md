@@ -5,12 +5,12 @@ Robert myers completion miner for bittensor's prompting network.
 # Example Usage
 ```
 python3 -m pip install -r  openminers/text_to_text/miner/robertmyers/requirements.txt
-python3 openminers/text_to_text/miner/robertmyers/neuron.py
+python3 openminers/text_to_text/miner/robertmyers/miner.py
 ```
 
 # Full Usage
 ```
-usage: neuron.py [-h] [--robertmyers.max_new_tokens ROBERTMYERS.MAX_NEW_TOKENS] [--netuid NETUID] [--neuron.name NEURON.NAME]
+usage: miner.py [-h] [--robertmyers.max_new_tokens ROBERTMYERS.MAX_NEW_TOKENS] [--netuid NETUID] [--neuron.name NEURON.NAME]
                  [--neuron.blocks_per_epoch NEURON.BLOCKS_PER_EPOCH] [--neuron.no_set_weights]
                  [--neuron.max_batch_size NEURON.MAX_BATCH_SIZE] [--neuron.max_sequence_len NEURON.MAX_SEQUENCE_LEN]
                  [--neuron.blacklist.hotkeys [NEURON.BLACKLIST.HOTKEYS ...]] [--neuron.blacklist.allow_non_registered]

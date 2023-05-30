@@ -15,6 +15,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
+import time
 import argparse
 import openminers
 import bittensor
@@ -59,7 +60,10 @@ class AI21Miner( openminers.BaseMiner ):
         history = self._process_history(messages)
         resp = self.model(history)
         return resp
-
-if __name__ == "__main__":
-    bittensor.utils.version_checking()
-    AI21Miner().run()
+    
+if __name__ == "__main__":  
+    miner = AI21Miner()
+    with miner:
+        while True:
+            print ('running...', time.time())
+            time.sleep(1)

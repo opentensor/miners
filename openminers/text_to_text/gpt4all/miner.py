@@ -19,8 +19,7 @@ import time
 import argparse
 import openminers
 import openminers
-import bittensor
- as bt
+import bittensor as bt
 from typing import List, Dict
 from langchain.llms import GPT4All
 
@@ -99,3 +98,4 @@ if __name__ == "__main__":
         while True:
             print ('running...', time.time())
             time.sleep(1)
+

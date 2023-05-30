@@ -15,6 +15,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
+import time
 import argparse
 import openminers
 import bittensor
@@ -54,7 +55,7 @@ class CohereMiner( openminers.BaseMiner ):
             truncate = self.config.cohere.truncate,
             stop = self.config.cohere.stop,
         )
-                
+
     @staticmethod
     def _process_history( history: List[Dict[str, str]] ) -> str:
         processed_history = ''
@@ -71,6 +72,9 @@ class CohereMiner( openminers.BaseMiner ):
         history = self._process_history( messages )
         return self.model( history )
 
-if __name__ == "__main__":
-    bittensor.utils.version_checking()
-    CohereMiner().run()
+if __name__ == "__main__":  
+    miner = CohereMiner()
+    with miner:
+        while True:
+            print ('running...', time.time())
+            time.sleep(1)

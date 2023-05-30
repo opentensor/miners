@@ -15,6 +15,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
+import time
 import torch
 import argparse
 import openminers
@@ -81,6 +82,8 @@ class NeoxtMiner( openminers.BaseMiner ):
         bittensor.logging.debug("Generation: " + str(generation).replace("<","-").replace(">","-"))
         return generation
 
-if __name__ == "__main__":
-    bittensor.utils.version_checking()
-    NeoxtMiner().run()
+if __name__ == "__main__":  
+    with NeoxtMiner():
+        while True:
+            print ('running...', time.time())
+            time.sleep(1)

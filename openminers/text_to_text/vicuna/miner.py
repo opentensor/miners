@@ -15,6 +15,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
+import time
 import torch
 import argparse
 import openminers
@@ -24,10 +25,6 @@ from typing import List, Dict
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
 class VicunaMiner( openminers.BaseMiner ):
-
-    @classmethod
-    def check_config( cls, config: 'bittensor.Config' ):
-        pass
 
     @classmethod
     def add_args( cls, parser: argparse.ArgumentParser ):
@@ -51,15 +48,12 @@ class VicunaMiner( openminers.BaseMiner ):
 
     def _process_history(self, history: List[str]) -> str:
         processed_history = ''
-
         if self.config.vicuna.do_prompt_injection:
             processed_history += self.config.vicuna.system_prompt
-
         for message in history:
             if message['role'] == 'system':
                 if not self.config.vicuna.do_prompt_injection or message != history[0]:
                     processed_history += '' + message['content'].strip() + ' '
-
             if message['role'] == 'Assistant':
                 processed_history += 'ASSISTANT:' + message['content'].strip() + '</s>'
             if message['role'] == 'user':
@@ -67,13 +61,10 @@ class VicunaMiner( openminers.BaseMiner ):
         return processed_history
 
     def forward(self, messages: List[Dict[str, str]]) -> str:
-
         history = self._process_history(messages)
         prompt = history + "ASSISTANT:"
-
         input_ids = self.tokenizer.encode(prompt, return_tensors="pt").to(self.config.vicuna.device)
-
-            output = self.model.generate(
+        output = self.model.generate(
             input_ids,
             max_length=input_ids.shape[1] + self.config.vicuna.max_new_tokens,
             temperature=self.config.vicuna.temperature,
@@ -88,6 +79,8 @@ class VicunaMiner( openminers.BaseMiner ):
         bittensor.logging.debug("Generation: " + str(generation))
         return generation
 
-if __name__ == "__main__":
-    bittensor.utils.version_checking()
-    VicunaMiner().run()
+if __name__ == "__main__":  
+    with VicunaMiner():
+        while True:
+            print ('running...', time.time())
+            time.sleep(1)
