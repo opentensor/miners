@@ -10,25 +10,17 @@
 # the Software.
 
 # THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
-# # THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-# # THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-# # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-# # DEALINGS IN THE SOFTWARE.
+# THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+# THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+# OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+# DEALINGS IN THE SOFTWARE.
 
 import json
 import openminers
-import argparse
 import bittensor as bt
 from typing import List, Dict
 
 bt.trace()
-
-class TemplateMiner( openminers.BaseMiner ):
-    @classmethod
-    def add_args( cls, parser: argparse.ArgumentParser ):
-        pass
-    def forward( self, messages: List[Dict[str, str]] ) -> str:
-        return "this is a mock response"
 
 def get_mock_query( ) -> List[Dict[str, str]]:
     prompt = """this is a mock request"""
@@ -40,9 +32,8 @@ def get_mock_query( ) -> List[Dict[str, str]]:
 
 # Send single query directly through template miner.
 def test_template_forward():
-    config = TemplateMiner.config()
-    config.mock_subtensor = True
-    miner = TemplateMiner( config = config )
+    config = openminers.TemplateMiner.config()
+    miner = openminers.TemplateMiner( config = config )
     miner.forward( get_mock_query()[0] )
 
 # Send single query through miner's axon.
@@ -51,9 +42,9 @@ def test_axon_forward():
     # Create a mock wallet.
     wallet = bt.wallet().create_if_non_existent()
     axon = bt.axon( wallet = wallet, port = 9090, ip = "127.0.0.1", metagraph = None )
-    config = TemplateMiner.config()
+    config = openminers.TemplateMiner.config()
     config.allow_non_registered = True
-    miner = TemplateMiner( config = config, axon = axon  )
+    miner = openminers.TemplateMiner( config = config, axon = axon  )
     miner.axon.start()
 
     # Get endpoint.
@@ -61,7 +52,6 @@ def test_axon_forward():
     axon_endpoint.ip = "127.0.0.1"
     axon_endpoint.port = 9090
     dendrite = bt.text_prompting( axon = axon_endpoint, keypair = wallet.hotkey )
-
 
     # Make query.
     _, roles, messages = get_mock_query()

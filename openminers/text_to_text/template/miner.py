@@ -28,17 +28,4 @@ class TemplateMiner( openminers.BaseMiner ):
         pass
 
     def forward( self, messages: List[Dict[str, str]] ) -> str:
-        pass
-
-    def __init__( self, config: "bt.Config" = None ):
-        self.config = TemplateMiner.config()
-        super().__init__( config = self.config )
-
-
-if __name__ == "__main__":  
-    miner = TemplateMiner()
-    with miner:
-        print ( miner.config )
-        for _ in range(4):
-            print ('running...', time.time())
-            time.sleep(1)
+        return "Hello World!"

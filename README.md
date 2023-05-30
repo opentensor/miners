@@ -22,8 +22,6 @@ pytest -s tests/
 # Running miners
 ```bash
 import openminers
-
-
 ```
 
 # TODO

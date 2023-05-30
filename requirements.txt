@@ -1,2 +1,4 @@
 pytest
 bittensor
+wandb
+tqdm
