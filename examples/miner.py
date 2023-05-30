@@ -15,28 +15,27 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
-import time
-import json
+import openminers
+import argparse
 import openminers
 import bittensor
  as bt
-from typing import List, Optional
+from typing import List, Dict, Union, Tuple
 
-class MockSubtensor:
+class TemplateMiner( openminers.BaseMiner ):
 
-    def __init__( self, config: "bt.Config" ):
-        self.config = config
-        self.mock_metagraph = bt.subtensor( self.config ).metagraph( config.netuid )
-        self.start_time = time.time()
-        
-    def serve_axon( self, netuid: int, axon: "bt.axon" ):
-        return True
+    def add_args( cls, parser: argparse.ArgumentParser ):
+        pass
 
-    def register( self, netuid: int, wallet: "bt.Wallet" ):
-        return True
+    def forward( self, messages: List[Dict[str, str]] ) -> str:
+        pass
 
-    def get_current_block( self ):
-        return int( (time.time() - self.start_time) / 12 ) + self.mock_metagraph.block.item()
+    def __init__( self, config: "bt.Config" = None ):
+        self.config = TemplateMiner.config()
+        super().__init__( config = self.config )
 
-    def metagraph( self, netuid: int ) -> "bt.Metagraph":
-        return self.mock_metagraph
+
+if __name__ == "__main__":  
+    miner = TemplateMiner()
+    with miner:
+        print ( miner.config )

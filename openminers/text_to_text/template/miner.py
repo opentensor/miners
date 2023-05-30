@@ -18,7 +18,6 @@
 import time
 import argparse
 import openminers
-import bittensor as bt
 from typing import List, Dict
 
 class TemplateMiner( openminers.BaseMiner ):
@@ -28,4 +27,14 @@ class TemplateMiner( openminers.BaseMiner ):
         pass
 
     def forward( self, messages: List[Dict[str, str]] ) -> str:
-        return "Hello World!"
+        return 'Hello World!'
+    
+    def __init__( self, *args, **kwargs):
+        super( TemplateMiner, self ).__init__( *args, **kwargs )
+
+if __name__ == "__main__":  
+    miner = TemplateMiner()
+    with miner:
+        while True:
+            print ('running...', time.time())
+            time.sleep(1)

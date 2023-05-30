@@ -16,13 +16,13 @@
 # DEALINGS IN THE SOFTWARE.
 
 import json
-import wandb
 import openminers
 import openminers
 import bittensor
  as bt
-from tqdm import tqdm
 from typing import List, Dict
+
+bt.trace()
 
 def get_mock_query( ) -> List[Dict[str, str]]:
     prompt = """this is a mock request"""
@@ -32,10 +32,15 @@ def get_mock_query( ) -> List[Dict[str, str]]:
     packed_messages = [ json.dumps({"role": role, "content": message}) for role, message in zip( roles,  messages )]
     return packed_messages, roles, messages
 
-# Send single query through miner's axon.
-def benchmark_forward():     
-    wandb.init( project='openminers', name = 'benchmark_forward' )
+# Send single query directly through template miner.
+def test_direct_forward():
+    config = openminers.TemplateMiner.config()
+    miner = openminers.TemplateMiner( config = config )
+    miner.forward( get_mock_query()[0] )
 
+# Send single query through miner's axon.
+def test_axon_forward():
+     
     # Create a mock wallet.
     wallet = bt.wallet().create_if_non_existent()
     axon = bt.axon( wallet = wallet, port = 9090, ip = "127.0.0.1", metagraph = None )
@@ -51,14 +56,10 @@ def benchmark_forward():
     dendrite = bt.text_prompting( axon = axon_endpoint, keypair = wallet.hotkey )
 
     # Make query.
-    responses = []
-    for step in range(10000):
-        _, roles, messages = get_mock_query()
-        forward_call = dendrite.forward( roles = roles, messages = messages, timeout = 1e6 )
-        responses.append( forward_call )
-        wandb.log( { 'step': step } )
-
-    
+    _, roles, messages = get_mock_query()
+    forward_call = dendrite.forward( roles = roles, messages = messages, timeout = 1e6 )
+    assert forward_call.is_success == True, f'Axon forward call failed: {forward_call}'
 
 if __name__ == "__main__":
-    benchmark_forward()
+    test_direct_forward()
+    test_axon_forward()

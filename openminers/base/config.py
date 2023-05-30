@@ -17,7 +17,9 @@
 
 import os
 import argparse
-import bittensor as bt
+import openminers
+import bittensor
+ as bt
 
 def add_args( cls, parser: argparse.ArgumentParser ):
     # Call add args to on sub class.
@@ -34,6 +36,12 @@ def add_args( cls, parser: argparse.ArgumentParser ):
     parser.add_argument( '--miner.blacklist.default_stake', type = float, help = 'Set default stake for miners.', default = 0.0)
     parser.add_argument( '--miner.default_priority', type = float, help = 'Set default priority for miners.', default = 0.0 )
     parser.add_argument( '--miner.mock_subtensor', action = 'store_true', help = 'If True, the miner will allow non-registered hotkeys to mine.', default = True)
+
+    # Wandb
+    parser.add_argument( '--wandb.on', action = 'store_true', help = 'Turn on wandb.', default = False )
+    parser.add_argument( '--wandb.project_name', type = str, help = 'The name of the project where youre sending the new run.', default = 'opentensor-miners' )
+    parser.add_argument( '--wandb.entity', type = str, help = 'An entity is a username or team name where youre sending runs.', default = 'opentensor' )
+    parser.add_argument( '--wandb.offline', action = 'store_true', help = 'Runs wandb in offline mode.', default = False )
 
     bt.wallet.add_args( parser )
     bt.axon.add_args( parser )

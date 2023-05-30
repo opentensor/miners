@@ -17,7 +17,9 @@
 
 import json
 import openminers
-import bittensor as bt
+import openminers
+import bittensor
+ as bt
 from typing import List, Dict
 
 bt.trace()
@@ -31,9 +33,9 @@ def get_mock_query( ) -> List[Dict[str, str]]:
     return packed_messages, roles, messages
 
 # Send single query directly through template miner.
-def test_template_forward():
-    config = openminers.TemplateMiner.config()
-    miner = openminers.TemplateMiner( config = config )
+def test_direct_forward():
+    config = openminers.GPT4ALLMiner.config()
+    miner = openminers.GPT4ALLMiner( config = config )
     miner.forward( get_mock_query()[0] )
 
 # Send single query through miner's axon.
@@ -42,9 +44,9 @@ def test_axon_forward():
     # Create a mock wallet.
     wallet = bt.wallet().create_if_non_existent()
     axon = bt.axon( wallet = wallet, port = 9090, ip = "127.0.0.1", metagraph = None )
-    config = openminers.TemplateMiner.config()
+    config = openminers.GPT4ALLMiner.config()
     config.allow_non_registered = True
-    miner = openminers.TemplateMiner( config = config, axon = axon  )
+    miner = openminers.GPT4ALLMiner( config = config, axon = axon  )
     miner.axon.start()
 
     # Get endpoint.
@@ -59,5 +61,5 @@ def test_axon_forward():
     assert forward_call.is_success == True, f'Axon forward call failed: {forward_call}'
 
 if __name__ == "__main__":
-    test_template_forward()
+    test_direct_forward()
     test_axon_forward()

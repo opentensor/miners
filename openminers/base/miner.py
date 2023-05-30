@@ -16,11 +16,15 @@
 # DEALINGS IN THE SOFTWARE.
 
 import copy
+import wandb
 import torch
 import argparse
 import threading
-import bittensor as bt
+import openminers
+import bittensor
+ as bt
 
+from abc import ABC, abstractmethod
 from typing import List, Dict, Union, Tuple
 
 from .run import run
@@ -28,8 +32,6 @@ from .priority import priority
 from .blacklist import blacklist
 from .mock import MockSubtensor
 from .config import config, check_config
-
-from abc import ABC, abstractmethod
 
 class BaseMiner( ABC ):
 
@@ -111,6 +113,17 @@ class BaseMiner( ABC ):
                   
         # Instantiate synapse.
         self.synapse = synapse or Synapse( axon = self.axon )
+
+        # Init wandb.
+        if self.config.wandb.on:
+            self.wandb = wandb.init(
+                project = self.config.wandb.project_name,
+                entity = self.config.wandb.entity,
+                config = self.config,
+                mode = 'offline' if self.config.wandb.offline else 'online',
+                dir = self.config.miner.full_path,
+                magic = True,
+            )
 
         # Instantiate runners.
         self.should_exit: bool = False
