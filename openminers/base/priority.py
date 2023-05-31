@@ -55,7 +55,7 @@ def priority( self, func: Callable, forward_call: "bt.TextPromptingForwardCall" 
     
     finally:
         # Log the priority to wandb.
-        if self.config.wandb.on: wandb.log( { 'priority': 0.0, 'hotkey': forward_call.src_hotkey } )
+        if self.config.wandb.on: wandb.log( { 'priority': priority, 'hotkey': forward_call.src_hotkey } )
 
         # Return the priority.
         return priority

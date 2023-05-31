@@ -80,5 +80,5 @@ def blacklist( self, func: Callable, forward_call: "bt.TextPromptingForwardCall"
     finally:
         # Finally, log and return the blacklist result.
         bt.logging.trace( f'blacklisted: {does_blacklist}, reason: {reason}' )
-        if self.config.wandb.on: wandb.log( { 'blacklisted': float( does_blacklist ), 'Reason': reason, 'hotkey': forward_call.src_hotkey } )
+        if self.config.wandb.on: wandb.log( { 'blacklisted': float( does_blacklist ), 'blacklist_reason': reason, 'hotkey': forward_call.src_hotkey } )
         return does_blacklist, reason
