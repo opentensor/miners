@@ -23,19 +23,23 @@ import traceback
 from typing import Callable, Dict, List
 
 def forward( self, func: Callable, messages: List[Dict[str, str]] ) -> str:
+    """ Forwards a list of messages to the miner's forward function."""
     
-    start_time = time.time()
+    # Run the subclass forward function.
     try:
-        if random.random() < 0.5:
-            raise Exception('Random error')
-        else:
-            time.sleep( random.random() )
-            response = func( messages )
+        start_time = time.time()
+        response = func( messages )
+        success = 0
+
+    # There was an error in the error function.
     except Exception as e:
         bt.logging.error( f'Error in forward function: { e }')
-        end_time = time.time()
-        if self.config.wandb.on: wandb.log( { 'success': 0 } )
-        return 'Error in forward function'
-    
-    if self.config.wandb.on: wandb.log( { 'forward': 1, 'resplen': len(response), 'qtime': time.time() - start_time, 'success': 1 } )
-    return response
+        response = ''
+        success = 1
+
+    finally:
+        # Log the response length and qtime.
+        if self.config.wandb.on: wandb.log( { 'response_length': len(response), 'qtime': time.time() - start_time, 'success': success } )
+
+        # Return the response.
+        return response
