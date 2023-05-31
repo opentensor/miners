@@ -48,5 +48,7 @@ python3 benchmarks/base.py template 10 --wandb.on
 - [ ] Bechmark all miners
 - [ ] Allow in code api key and argument pass through 
 - [ ] Move set weights into its own file
+- [ ] Maintain a history of requests per hotkey
 - [ ] Priority based on rate limit
 - [ ] Blacklist based on rate limit
+- [ ] Benchmark longer and shorter request sizes
