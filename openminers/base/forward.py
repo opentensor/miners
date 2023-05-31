@@ -29,13 +29,13 @@ def forward( self, func: Callable, messages: List[Dict[str, str]] ) -> str:
     try:
         start_time = time.time()
         response = func( messages )
-        success = 0
+        success = 1
 
     # There was an error in the error function.
     except Exception as e:
         bt.logging.error( f'Error in forward function: { e }')
         response = ''
-        success = 1
+        success = 0
 
     finally:
         # Log the response length and qtime.

@@ -25,9 +25,12 @@ import bittensor as bt
 from tqdm import tqdm
 from typing import List, Dict
 
+# from datasets import load_dataset
+# DATASET = iter( load_dataset( 'squad_v2', split = 'train', streaming = True ).shuffle( buffer_size = 10000 ))
+
 def get_mock_query( ) -> List[Dict[str, str]]:
-    prompt = """this is a mock request"""
-    message = "who am I, really?"
+    prompt = """you are a chatbot that can come up with unique questions about many things."""
+    message = "ask me a random question about anything"
     roles = ['system', 'user']
     messages = [ prompt, message ]
     packed_messages = [ json.dumps({"role": role, "content": message}) for role, message in zip( roles,  messages )]
