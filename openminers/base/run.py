@@ -15,70 +15,83 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 import time
+import wandb
 import torch
-import datetime
-import openminers
 import bittensor as bt
 
 def run( self ):
     bt.logging.info( f"Starting miner with config {self.config}" )
 
-    # --- Start the miner.
+    # --- Optionally register the wallet.
     if not self.config.miner.no_register:
         bt.logging.info( f"Registering with wallet: {self.wallet} on netuid {self.config.netuid}" )
         self.subtensor.register( netuid = self.config.netuid, wallet = self.wallet )
 
+    # --- Optionally server the axon.
     if not self.config.miner.no_serve:
         bt.logging.info( f"Serving axon: {self.axon}" )
         self.subtensor.serve_axon( netuid = self.config.netuid, axon = self.axon )
 
+    # --- Optionally start the axon.
     if not self.config.miner.no_start_axon:
         bt.logging.info( f"Starting axon locally on {self.axon.full_address} and serving on {self.axon.external_ip}:{self.axon.external_port}" )
         self.axon.start()
 
-    # --- Run Forever.
-    last_update = self.subtensor.get_current_block()
-    bt.logging.info( f"Miner starting at block: { last_update }" )
+    # --- Run until should_exit = True.
+    self.last_epoch_block = self.subtensor.get_current_block()
+    bt.logging.info( f"Miner starting at block: { self.last_epoch_block }" )
     while not self.should_exit:
+        start_epoch = time.time()
 
         # --- Wait until next epoch.
         current_block = self.subtensor.get_current_block()
-        while (current_block - last_update) < self.config.miner.blocks_per_epoch:
+        while (current_block - self.last_epoch_block) < self.config.miner.blocks_per_epoch:
 
             # --- Wait for next block.
-            time.sleep( 0.1 ) #bittensor.__blocktime__
+            time.sleep( 1 )
             current_block = self.subtensor.get_current_block()
 
             # --- Check if we should exit.
             if self.should_exit: break
 
-        last_update = self.subtensor.get_current_block()
+        # --- Update the metagraph with the latest network state.
+        self.last_epoch_block = self.subtensor.get_current_block()
+        self.metagraph.sync( lite = False )
+        self.uid = self.metagraph.hotkeys.index( self.wallet.hotkey.ss58_address )
 
-        # # --- Update the metagraph with the latest network state.
-        # self.metagraph.sync( lite = True )
-        # uid = self.metagraph.hotkeys.index( self.wallet.hotkey.ss58_address )
+        # --- Log performance.
+        step_log = {
+            'epoch_time': time.time() - start_epoch,
+            'block': self.last_epoch_block,
+            'uid': self.wallet.hotkey.ss58_address,
+            'stake': self.metagraph.S[self.uid].item(),
+            'trust': self.metagraph.T[self.uid].item(),
+            'incentive': self.metagraph.I[self.uid].item(),
+            'consensus': self.metagraph.C[self.uid].item(),
+            'dividends': self.metagraph.D[self.uid].item(),
+        }
+        bt.logging.info( str(step_log) )
+        if self.config.wandb.on: wandb.log( step_log )
+        
+        # --- Set weights.
+        if not self.config.miner.no_set_weights:
 
-        # # --- Log performance.
-        # print(
-        #     f"[white not bold]{datetime.now():%Y-%m-%d %H:%M:%S}[/white not bold]{' ' * 4} | "
-        #     f"{f'UID [bright_cyan]{uid}[/bright_cyan]'.center(16 + len('[bright_cyan][/bright_cyan]'))} | "
-        #     f'[dim white not bold] [green]{str(self.metagraph.S[uid].item()):.4}[/green] Stake [/dim white not bold]'
-        #     f'[dim white not bold]| [yellow]{str(self.metagraph.trust[uid].item()) :.3}[/yellow] Trust [/dim white not bold]'
-        #     f'[dim white not bold]| [green]{str(self.metagraph.incentive[uid].item()):.3}[/green] Incentive [/dim white not bold]')
+            try:
+                # --- query the chain for the most current number of peers on the network
+                chain_weights = torch.zeros( self.subtensor.subnetwork_n( netuid = self.config.netuid ))
+                chain_weights[self.uid] = 1
+                self.subtensor.set_weights(
+                    uids=torch.arange(0, len(chain_weights)),
+                    netuid=self.config.netuid,
+                    weights=chain_weights,
+                    wait_for_inclusion=False,
+                    wallet=self.wallet,
+                    version_key=1
+                )
+                wandb.log( {'set_weights': 1 } )
 
-        # # --- Set weights.
-        # if not self.config.miner.no_set_weights:
-        #     try:
-        #         # --- query the chain for the most current number of peers on the network
-        #         chain_weights = torch.zeros( self.subtensor.subnetwork_n( netuid = self.config.netuid ))
-        #         chain_weights[uid] = 1
-        #         did_set = self.subtensor.set_weights(
-        #             uids=torch.arange(0, len(chain_weights)),
-        #             netuid=self.config.netuid,
-        #             weights=chain_weights,
-        #             wait_for_inclusion=False,
-        #             wallet=self.wallet,
-        #             version_key=1
-        #         )
-        #     except:
-        #         pass
+            except Exception as e:
+                # --- Set weights.
+                wandb.log( {'set_weights': 0} )
+                bt.logging.error( f"Failed to set weights on chain with exception: { e }" )
+                
