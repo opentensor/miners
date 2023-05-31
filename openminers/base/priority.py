@@ -43,14 +43,13 @@ def priority( self, func: Callable, forward_call: "bt.TextPromptingForwardCall" 
         priority = func(forward_call)
     
     except NotImplementedError:
-        # The subclass has not implemented a priority function.
-        pass
+        # If the subclass has not implemented a priority function, we use the default priority.
+        priority = default_priroity(self, forward_call)
+
 
     except Exception as e:
         # An error occured in the subclass priority function.
         bt.logging.error( f'Error in priority function: {e}') 
-
-        # If the subclass has not implemented a priority function, we use the default priority.
         priority = default_priroity(self, forward_call)
     
     finally:
