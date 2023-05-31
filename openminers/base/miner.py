@@ -129,7 +129,7 @@ class BaseMiner( ABC ):
 
     def run( self ): run( self )
 
-    def start(self):
+    def run_in_background_thread(self):
         if not self.is_running:
             bt.logging.debug( f'Starting miner background thread') 
             self.should_exit = False
@@ -138,13 +138,13 @@ class BaseMiner( ABC ):
             self.is_running = True
             bt.logging.debug( f'Started') 
 
-    def stop(self):
+    def stop_run_thread(self):
         if self.is_running:
             bt.logging.debug( f'Stopping miner background thread...') 
             self.should_exit = True
             self.thread.join( 5 )
             bt.logging.debug( f'Stopped') 
 
-    def __enter__( self ): self.start()
+    def __enter__( self ): self.run_in_background_thread()
 
-    def __exit__( self, exc_type, exc_value, traceback ): self.stop()
+    def __exit__( self, exc_type, exc_value, traceback ): self.stop_run_thread()

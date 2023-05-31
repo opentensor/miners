@@ -8,10 +8,20 @@ python3 -m pip install -e .
 ```
 
 # Running openminers
-```bash
+```python
 import openminers
 with openminers.TemplateMiner():
     pass
+
+# or
+miner = openminers.TemplateMiner()
+miner.run()
+
+# or
+miner = openminers.TemplateMiner()
+miner.run_in_background_thread()
+...
+miner.stop_background_thread()
 ```
 
 # Running Benchmarks
@@ -29,10 +39,14 @@ python3 benchmarks/base.py template 10 --wandb.on
 - [x] Add template text_to_text miner
 - [x] Add template text_to_text forward tests 
 - [x] Add benchmarks
-- [ ] Add Wandb to miner
+- [x] Add Wandb to miner
 - [x] Add more miners
-- [ ] Advance blacklist function
-- [ ] Advance priority function
-- [ ] Advance telemetry through wandb
-- [ ] Add tests to miners
-- [ ] Add benchmarks to miners
+- [x] Advance blacklist function
+- [x] Advance priority function
+- [x] Advance telemetry through wandb
+- [x] Add benchmarks to miners
+- [ ] Bechmark all miners
+- [ ] Allow in code api key and argument pass through 
+- [ ] Move set weights into its own file
+- [ ] Priority based on rate limit
+- [ ] Blacklist based on rate limit
