@@ -19,7 +19,7 @@ import wandb
 import bittensor as bt
 from typing import List, Dict, Union, Tuple, Callable
 
-def default_priroity( self, forward_call: "bt.TextPromptingForwardCall" ) -> float:
+def default_priority( self, forward_call: "bt.TextPromptingForwardCall" ) -> float:
     # Check if the key is registered.
     registered = False
     if self.metagraph is not None:
@@ -27,7 +27,7 @@ def default_priroity( self, forward_call: "bt.TextPromptingForwardCall" ) -> flo
 
     # Non-registered users have a default priority.
     if not registered:
-        return self.config.miner.default_priority
+        return self.config.miner.priority.default
 
     # If the user is registered, it has a UID.
     uid = self.metagraph.hotkeys.index( forward_call.src_hotkey )
@@ -37,6 +37,7 @@ def default_priroity( self, forward_call: "bt.TextPromptingForwardCall" ) -> flo
 def priority( self, func: Callable, forward_call: "bt.TextPromptingForwardCall" ) -> float:
 
     # Check to see if the subclass has implemented a priority function.
+    priority = None
     try: 
 
         # Call the subclass priority function and return the result.
@@ -44,15 +45,17 @@ def priority( self, func: Callable, forward_call: "bt.TextPromptingForwardCall" 
     
     except NotImplementedError:
         # If the subclass has not implemented a priority function, we use the default priority.
-        priority = default_priroity(self, forward_call)
-
+        priority = default_priority(self, forward_call)
 
     except Exception as e:
         # An error occured in the subclass priority function.
         bt.logging.error( f'Error in priority function: {e}') 
-        priority = default_priroity(self, forward_call)
     
     finally:
+        # If the priority is None, we use the default priority.
+        if priority == None: 
+            priority = default_priority(self, forward_call)
+
         # Log the priority to wandb.
         if self.config.wandb.on: wandb.log( { 'priority': priority, 'hotkey': forward_call.src_hotkey } )
 

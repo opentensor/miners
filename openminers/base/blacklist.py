@@ -63,6 +63,8 @@ def blacklist( self, func: Callable, forward_call: "bt.TextPromptingForwardCall"
     bt.logging.trace( 'run blacklist function')
 
     # First check to see if the black list function is ovveridden by the subclass.
+    does_blacklist = None
+    reason = None
     try: 
 
         # Run the subclass blacklist function.
@@ -78,6 +80,10 @@ def blacklist( self, func: Callable, forward_call: "bt.TextPromptingForwardCall"
         does_blacklist, reason = default_blacklist( self, forward_call )
 
     finally:
+        # If the blacklist function returned None, we use the default blacklist.
+        if does_blacklist == None: 
+            does_blacklist, reason = default_blacklist( self, forward_call )
+
         # Finally, log and return the blacklist result.
         bt.logging.trace( f'blacklisted: {does_blacklist}, reason: {reason}' )
         if self.config.wandb.on: wandb.log( { 'blacklisted': float( does_blacklist ), 'blacklist_reason': reason, 'hotkey': forward_call.src_hotkey } )
