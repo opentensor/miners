@@ -32,7 +32,6 @@ def forward( self, func: Callable, messages: List[Dict[str, str]] ) -> str:
             time.sleep( random.random() )
             response = func( messages )
     except Exception as e:
-        traceback.print_stack()
         bt.logging.error( f'Error in forward function: { e }')
         end_time = time.time()
         if self.config.wandb.on: wandb.log( { 'success': 0 } )

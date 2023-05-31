@@ -16,7 +16,11 @@ with openminers.TemplateMiner():
 
 # Running Benchmarks
 ```bash
-python3 benchmarks/base.py openai 
+# Run 10 requests through the template miner
+python3 benchmarks/base.py template 10
+
+# Run 10 requests through the template miner with wandb logging
+python3 benchmarks/base.py template 10 --wandb.on 
 ```
 
 # TODO

@@ -19,67 +19,66 @@ import wandb
 import bittensor as bt
 from typing import List, Dict, Union, Tuple, Callable
 
+def default_blacklist( self, forward_call: "bt.TextPromptingForwardCall" ) -> Union[ Tuple[bool, str], bool ]:  
+    # Check if we allow non-registered users
+    # If we do, all messages go through.
+    if self.config.miner.blacklist.allow_non_registered:
+        return False, 'allow all non-registered hotkeys.'
+
+    # Check if the key is white listed.
+    if forward_call.src_hotkey in self.config.miner.blacklist.whitelist:
+        return False, 'whitelisted hotkey'
+
+    # Check if the key is black listed.
+    if forward_call.src_hotkey in self.config.miner.blacklist.blacklist:
+        return True, 'blacklisted hotkey'
+
+    # Check if the key is registered.
+    registered = False
+    if self.metagraph is not None:
+        registered = forward_call.src_hotkey in self.metagraph.hotkeys
+
+    # Check if we allow non-registered users.
+    if not registered:
+        return True, 'hotkey not registered'
+
+    # If the user is registered, it has a UID.
+    uid = self.metagraph.hotkeys.index( forward_call.src_hotkey )
+
+    # Check if the key has validator permit
+    if self.metagraph.validator_permit[uid] and self.config.miner.blacklist.force_validator_permit:
+        return True, 'validator permit required'
+
+    # Get the uid stake amount.
+    stake_amount = self.metagraph.S[uid].item() 
+
+    # Check if the user has enough stake.
+    if stake_amount < self.config.miner.minimum_stake_requirementc:
+        return True, 'hotkey does not have enough stake'
+
+    # Other wise the user is not blacklisted.
+    return False, 'passed blacklist'
+
 def blacklist( self, func: Callable, forward_call: "bt.TextPromptingForwardCall" ) -> Union[ Tuple[bool, str], bool ]:
     bt.logging.trace( 'run blacklist function')
 
     # First check to see if the black list function is ovveridden by the subclass.
     try: 
-        return func(forward_call)
+
+        # Run the subclass blacklist function.
+        does_blacklist, reason = func(forward_call)
     
     except NotImplementedError:
         # The subclass did not override the blacklist function.
-        pass
+        does_blacklist, reason = default_blacklist( self, forward_call )
 
     except Exception as e:
         # There was an error in their blacklist function.
         bt.logging.error( f'Error in blacklist function: {e}') 
+        does_blacklist, reason = default_blacklist( self, forward_call )
 
-    def run_checks():
-        # Check if we allow non-registered users
-        # If we do, all messages go through.
-        if self.config.miner.blacklist.allow_non_registered:
-            return False, 'allow all non-registered hotkeys.'
-
-        # Check if the key is white listed.
-        if forward_call.src_hotkey in self.config.miner.blacklist.whitelist:
-            return False, 'whitelisted hotkey'
-
-        # Check if the key is black listed.
-        if forward_call.src_hotkey in self.config.miner.blacklist.blacklist:
-            return True, 'blacklisted hotkey'
-
-        # Check if the key is registered.
-        registered = False
-        if self.metagraph is not None:
-            registered = forward_call.src_hotkey in self.metagraph.hotkeys
-
-        # Check if we allow non-registered users.
-        if not registered:
-            return True, 'hotkey not registered'
-
-        # If the user is registered, it has a UID.
-        uid = self.metagraph.hotkeys.index( forward_call.src_hotkey )
-
-        # Check if the key has validator permit
-        if self.metagraph.validator_permit[uid] and self.config.miner.blacklist.force_validator_permit:
-            return True, 'validator permit required'
-
-        # Get the uid stake amount.
-        stake_amount = self.metagraph.S[uid].item() 
-
-        # Check if the user has enough stake.
-        if stake_amount < self.config.miner.minimum_stake_requirementc:
-            return True, 'hotkey does not have enough stake'
-
-        # Other wise the user is not blacklisted.
-        return False, 'passed blacklist'
-        
-    # Run checks.
-    does_blacklist, reason = run_checks()
-
-    # Log blacklist event.
-    bt.logging.trace( f'blacklisted: {does_blacklist}, reason: {reason}' )
-    if self.config.wandb.on: wandb.log( { 'blacklisted': int( does_blacklist ), 'Reason': reason, 'hotkey': forward_call.src_hotkey } )
-
-    # Return.
-    return does_blacklist, reason
+    finally:
+        # Finally, log and return the blacklist result.
+        bt.logging.trace( f'blacklisted: {does_blacklist}, reason: {reason}' )
+        if self.config.wandb.on: wandb.log( { 'blacklisted': float( does_blacklist ), 'Reason': reason, 'hotkey': forward_call.src_hotkey } )
+        return does_blacklist, reason

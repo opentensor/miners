@@ -40,7 +40,8 @@ def add_args( cls, parser: argparse.ArgumentParser ):
     parser.add_argument( '--miner.blacklist.minimum_stake_requirement', type = float, help = 'Minimum stake requirement', default = 0.0 )
 
     # Priority.
-    parser.add_argument( '--miner.default_priority', type = float, help = 'Set default priority for miners.', default = 0.0 )
+    parser.add_argument( '--miner.priority.default', type = float, help = 'Default priority of non-registered requests', default = 0.0 )
+    parser.add_argument( '--miner.priority.use_s', type = float, help = 'A multiplier', default = 0.0 )
 
     # Switches.
     parser.add_argument( '--miner.no_set_weights', action = 'store_true', help = 'If True, the miner does not set weights.', default = False )
