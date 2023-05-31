@@ -30,7 +30,10 @@ miner.stop_background_thread()
 python3 benchmarks/base.py template 10
 
 # Run 10 requests through the template miner with wandb logging
-python3 benchmarks/base.py template 10 --wandb.on 
+python3 benchmarks/base.py template 1000 --wandb.on 
+
+# Run 100 requests through the openai miner with api key
+python3 benchmarks/base.py openai 100 --openai.api_key xxx...xx
 ```
 
 # TODO
