@@ -19,7 +19,7 @@ import time
 import openai
 import argparse
 import openminers
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 class OpenAIMiner( openminers.BaseMiner ):
 
@@ -35,9 +35,9 @@ class OpenAIMiner( openminers.BaseMiner ):
         parser.add_argument('--openai.frequency_penalty', type=float, default=0, help="Penalty for tokens based on their frequency in the text so far.")
         parser.add_argument('--openai.model_name', type=str, default='gpt-3.5-turbo', help="OpenAI model to use for completion.")
 
-    def __init__( self, *args, **kwargs):
+    def __init__( self, api_key: Optional[str] = None, *args, **kwargs):
         super( OpenAIMiner, self ).__init__( *args, **kwargs )
-        openai.api_key = self.config.openai.api_key
+        openai.api_key = api_key or self.config.openai.api_key
 
     def forward( self, messages: List[Dict[str, str]]  ) -> str:
         resp = openai.ChatCompletion.create(
