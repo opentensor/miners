@@ -19,14 +19,10 @@ import time
 import argparse
 import openminers
 import bittensor
-from typing import List, Dict
+from typing import List, Dict, Optional
 from langchain.llms import Cohere
 
 class CohereMiner( openminers.BaseMiner ):
-
-    @classmethod
-    def check_config( cls, config: 'bittensor.Config' ):
-        assert config.cohere.api_key != None, 'the miner requires passing --cohere.api_key as an argument of the config.'
 
     @classmethod
     def add_args( cls, parser: argparse.ArgumentParser ):
@@ -39,13 +35,15 @@ class CohereMiner( openminers.BaseMiner ):
         parser.add_argument('--cohere.presence_penalty', type=float, help='Penalizes repeated tokens.', default=0.0)
         parser.add_argument('--cohere.truncate', type=str, help='Specify how the client handles inputs longer than the maximum token length: Truncate from START, END or NONE', default=None)
         parser.add_argument('--cohere.stop', type=str, help='List of tokens to stop generation on.', default=None)
-        parser.add_argument('--cohere.api_key', type=str, help='API key for Cohere.', required=True)
+        parser.add_argument('--cohere.api_key', type=str, help='API key for Cohere.' )
 
-    def __init__( self, *args, **kwargs):
+    def __init__( self, api_key: Optional[str] = None, *args, **kwargs):
         super( CohereMiner, self ).__init__( *args, **kwargs )
+        if api_key is None and self.config.cohere.api_key is None:
+            raise ValueError('the miner requires passing --cohere.api_key as an argument of the config or to the constructor.')
         self.model = Cohere(
             model = self.config.cohere.model_name,
-            cohere_api_key = self.config.cohere.api_key,
+            cohere_api_key = api_key or self.config.cohere.api_key,
             max_tokens = self.config.cohere.max_tokens,
             temperature = self.config.cohere.temperature,
             k = self.config.cohere.k,

@@ -20,14 +20,14 @@ import argparse
 import openminers
 import bittensor
 from rich import print
-from typing import List, Dict
+from typing import List, Dict, Optional
 from langchain.llms import AlephAlpha
 
 class AlephAlphaMiner( openminers.BaseMiner):
 
     @classmethod
     def add_args( cls, parser: argparse.ArgumentParser ):
-        parser.add_argument('--aleph.api_key', type=str, help='AlephAlpha API key.', required = True )
+        parser.add_argument('--aleph.api_key', type=str, help='AlephAlpha API key.')
         parser.add_argument('--aleph.model', type=str, help='Model name to use.', default='luminous-base')
         parser.add_argument('--aleph.maximum_tokens', type=int, help='The maximum number of tokens to be generated.', default=64)
         parser.add_argument('--aleph.temperature', type=float, help='A non-negative float that tunes the degree of randomness in generation.', default=0.0)
@@ -35,10 +35,12 @@ class AlephAlphaMiner( openminers.BaseMiner):
         parser.add_argument('--aleph.top_k', type=int, help='Number of most likely tokens to consider at each step.', default=0)
         parser.add_argument('--aleph.top_p', type=float, help='Total probability mass of tokens to consider at each step.', default=0.0)
 
-    def __init__( self, *args, **kwargs):
+    def __init__( self, api_key: Optional[str] = None, *args, **kwargs):
         super( AlephAlphaMiner, self ).__init__( *args, **kwargs )
+        if api_key is None and self.config.aleph.api_key is None:
+            raise ValueError('the miner requires passing --aleph.api_key as an argument of the config or to the constructor.')
         self.model = AlephAlpha(
-            aleph_alpha_api_key = self.config.aleph.api_key,
+            aleph_alpha_api_key = api_key or self.config.aleph.api_key,
             model = self.config.aleph.model,
             maximum_tokens = self.config.aleph.maximum_tokens,
             temperature = self.config.aleph.temperature,

@@ -19,7 +19,7 @@ import time
 import argparse
 import openminers
 import bittensor
-from typing import List, Dict
+from typing import List, Dict, Optional
 from langchain.llms import AI21
 
 class AI21Miner( openminers.BaseMiner ):
@@ -30,16 +30,18 @@ class AI21Miner( openminers.BaseMiner ):
 
     @classmethod
     def add_args( cls, parser: argparse.ArgumentParser ):
-        parser.add_argument( '--ai21.api_key', type=str, help='AI21 API key.', required=True )
+        parser.add_argument( '--ai21.api_key', type=str, help='AI21 API key.' )
         parser.add_argument( '--ai21.model_name', type=str, help='Name of the model.', default='j2-jumbo-instruct')
         parser.add_argument( '--ai21.stop', help='Stop tokens.', default=['user: ', 'bot: ', 'system: '])
         
-    def __init__( self, *args, **kwargs):
+    def __init__( self, api_key: Optional[str] = None, *args, **kwargs):
         super( AI21Miner, self ).__init__( *args, **kwargs )
         bittensor.logging.info( 'Loading AI21 Model...' )
+        if api_key is None and self.config.ai21.api_key is None:
+            raise ValueError('the miner requires passing --ai21.api_key as an argument of the config or to the constructor.')
         self.model = AI21( 
             model = self.config.ai21.model_name, 
-            ai21_api_key = self.config.ai21.api_key, 
+            ai21_api_key = api_key or self.config.ai21.api_key, 
             stop = self.config.ai21.stop
         )
         bittensor.logging.info( 'Model loaded!' )
