@@ -20,9 +20,8 @@ import torch
 import argparse
 import openminers
 import bittensor
-from typing import List, Dict
+from typing import List, Dict, Optional
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline, StoppingCriteria, StoppingCriteriaList
-
 
 class StopOnTokens(StoppingCriteria):
     def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor, **kwargs) -> bool:
@@ -49,17 +48,19 @@ class StabilityAIMiner( openminers.BaseMiner):
         parser.add_argument('--stabilityai.top_k', type=int, default=10, help='Description of top_k')
         parser.add_argument('--stabilityai.stopping_criteria', type=str, default='stop', help='Description of stopping_criteria')
 
-    def __init__( self, *args, **kwargs):
+    def __init__( self, api_key: Optional[str] = None, *args, **kwargs):
         super( StabilityAIMiner, self ).__init__( *args, **kwargs )
         bittensor.logging.info( 'Loading togethercomputer/StabilityAI {}B model...'.format( self.config.stabilityai.model_size ) )
+        if api_key is None and self.config.stabilityai.api_key is None:
+            raise ValueError('the miner requires passing --stabilityai.api_key as an argument of the config or to the constructor.')
         self.model = AutoModelForCausalLM.from_pretrained(
             "stabilityai/stablelm-tuned-alpha-{}b".format( self.config.stabilityai.model_size ),
-            use_auth_token=self.config.stabilityai.api_key,
+            use_auth_token = api_key or self.config.stabilityai.api_key,
             torch_dtype=torch.float16
         ).cuda()
         self.tokenizer = AutoTokenizer.from_pretrained(
             "stabilityai/stablelm-tuned-alpha-{}b".format( self.config.stabilityai.model_size ),
-            use_auth_token=self.config.stabilityai.api_key
+            use_auth_token = api_key or self.config.stabilityai.api_key
         )
 
         if self.config.stabilityai.device == "cuda":

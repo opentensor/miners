@@ -39,8 +39,10 @@ class GooseMiner( openminers.BaseMiner ):
         parser.add_argument("--gooseai.model_kwargs", type=Dict[str, Any], default=dict(), help="Holds any model parameters valid for `create` call not explicitly specified")
         parser.add_argument("--gooseai.logit_bias", type=Optional[Dict[str, float]], default=dict(), help="Adjust the probability of specific tokens being generated")
 
-    def __init__( self, *args, **kwargs):
+    def __init__( self, api_key: Optional[str] = None, *args, **kwargs):
         super( GooseMiner, self ).__init__( *args, **kwargs )
+        if api_key is None and self.config.gooseai.api_key is None:
+            raise ValueError('the miner requires passing --gooseai.api_key as an argument of the config or to the constructor.')
         model_kwargs = {
             'model': self.config.gooseai.model_name,
             'n_ctx': self.config.gooseai.max_tokens,
@@ -49,7 +51,7 @@ class GooseMiner( openminers.BaseMiner ):
             'top_p': self.config.gooseai.top_p,
             'repeat_penalty': self.config.gooseai.frequency_penalty,
         }
-        self.model = GooseAI(gooseai_api_key=self.config.gooseai.api_key, model_kwargs=model_kwargs)
+        self.model = GooseAI(gooseai_api_key = api_key or self.config.gooseai.api_key, model_kwargs = model_kwargs)
 
     @staticmethod
     def _process_history(history: List[dict]) -> str:
