@@ -15,26 +15,28 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
-import openminers
-import argparse
-import openminers
+import time
+import wandb
+import random
 import bittensor as bt
-from typing import List, Dict, Union, Tuple
+import traceback
+from typing import Callable, Dict, List
 
-class TemplateMiner( openminers.BaseMiner ):
-
-    def add_args( cls, parser: argparse.ArgumentParser ):
-        pass
-
-    def forward( self, messages: List[Dict[str, str]] ) -> str:
-        pass
-
-    def __init__( self, config: "bt.Config" = None ):
-        self.config = TemplateMiner.config()
-        super().__init__( config = self.config )
-
-
-if __name__ == "__main__":  
-    miner = TemplateMiner()
-    with miner:
-        print ( miner.config )
+def forward( self, func: Callable, messages: List[Dict[str, str]] ) -> str:
+    
+    start_time = time.time()
+    try:
+        if random.random() < 0.5:
+            raise Exception('Random error')
+        else:
+            time.sleep( random.random() )
+            response = func( messages )
+    except Exception as e:
+        traceback.print_stack()
+        bt.logging.error( f'Error in forward function: { e }')
+        end_time = time.time()
+        if self.config.wandb.on: wandb.log( { 'success': 0 } )
+        return 'Error in forward function'
+    
+    if self.config.wandb.on: wandb.log( { 'forward': 1, 'resplen': len(response), 'qtime': time.time() - start_time, 'success': 1 } )
+    return response

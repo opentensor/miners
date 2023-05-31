@@ -4,7 +4,7 @@ Opentensor Miners
 # Installing
 With ≥python3.8 installed:
 ```bash
-python3 -m pip install -e.
+python3 -m pip install -e .
 ```
 
 # Running openminers
@@ -14,14 +14,9 @@ with openminers.TemplateMiner():
     pass
 ```
 
-# Running tests
+# Running Benchmarks
 ```bash
-pytest -s tests/
-```
-
-# Running benchmarks
-```bash
-python benchmarks/template.py
+python3 benchmarks/base.py openai 
 ```
 
 # TODO

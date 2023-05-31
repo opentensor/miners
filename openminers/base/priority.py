@@ -15,8 +15,17 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
-import openminers
+import wandb
 import bittensor as bt
+from typing import List, Dict, Union, Tuple, Callable
 
-def priority( self, forward_call: "bt.TextPromptingForwardCall" ) -> float:
+def priority( self, func: Callable, forward_call: "bt.TextPromptingForwardCall" ) -> float:
+    try: 
+        return func(forward_call)
+    except NotImplementedError:
+        pass
+    except Exception as e:
+        bt.logging.error( f'Error in priority function: {e}') 
+
+    if self.config.wandb.on: wandb.log( { 'priority': 0.0, 'hotkey': forward_call.src_hotkey } )
     return 0.0

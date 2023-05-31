@@ -27,6 +27,7 @@ from abc import ABC, abstractmethod
 from typing import List, Dict, Union, Tuple
 
 from .run import run
+from .forward import forward
 from .priority import priority
 from .blacklist import blacklist
 from .mock import MockSubtensor
@@ -46,14 +47,11 @@ class BaseMiner( ABC ):
     def forward( self, messages: List[Dict[str, str]] ) -> str:
         ...
 
-    def _forward( self, messages: List[Dict[str, str]] ) -> str:
-        return self.forward( messages )
-
     def priority( self, forward_call: "bt.TextPromptingForwardCall" ) -> float:
-        return priority( self, forward_call )
+        raise NotImplementedError('priority not implemented in subclass')
     
     def blacklist( self, forward_call: "bt.TextPromptingForwardCall" ) -> Union[ Tuple[bool, str], bool ]:
-        return blacklist( self, forward_call )
+        raise NotImplementedError('blacklist not implemented in subclass')
 
     def __init__( 
             self, 
@@ -95,15 +93,15 @@ class BaseMiner( ABC ):
 
             # Build priority function.
             def priority( _, forward_call: "bt.TextPromptingForwardCall" ) -> float:
-                return self.priority( forward_call )
+                return priority( self, self.priority, forward_call )
             
             # Build blacklist function.
             def blacklist( _, forward_call: "bt.TextPromptingForwardCall" ) -> Union[ Tuple[bool, str], bool ]:
-                return self.blacklist( forward_call )
+                return blacklist( self, self.blacklist, forward_call )
 
             # Build forward function.
             def forward( _, messages: List[Dict[str, str]] ) -> str:
-                return self.forward( messages )      
+                return forward( self, self.forward, messages )    
 
             # Build backward function.
             # TODO(const): accept this.
@@ -115,7 +113,7 @@ class BaseMiner( ABC ):
 
         # Init wandb.
         if self.config.wandb.on:
-            self.wandb = wandb.init(
+            wandb.init(
                 project = self.config.wandb.project_name,
                 entity = self.config.wandb.entity,
                 config = self.config,

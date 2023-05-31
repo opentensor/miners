@@ -16,11 +16,14 @@
 # DEALINGS IN THE SOFTWARE.
 
 import json
+import wandb
+import sys
+import time
+import argparse
 import openminers
 import bittensor as bt
+from tqdm import tqdm
 from typing import List, Dict
-
-bt.trace()
 
 def get_mock_query( ) -> List[Dict[str, str]]:
     prompt = """this is a mock request"""
@@ -30,34 +33,35 @@ def get_mock_query( ) -> List[Dict[str, str]]:
     packed_messages = [ json.dumps({"role": role, "content": message}) for role, message in zip( roles,  messages )]
     return packed_messages, roles, messages
 
-# Send single query directly through template miner.
-def test_direct_forward():
-    config = openminers.GPT4ALLMiner.config()
-    miner = openminers.GPT4ALLMiner( config = config )
-    miner.forward( get_mock_query()[0] )
+def run():
+    # Parse miner class.
+    MINER = getattr( openminers, sys.argv[1] )
+    N_STEPS = int(sys.argv[2]) 
 
-# Send single query through miner's axon.
-def test_axon_forward():
-     
-    # Create a mock wallet.
-    wallet = bt.wallet().create_if_non_existent()
-    axon = bt.axon( wallet = wallet, port = 9090, ip = "127.0.0.1", metagraph = None )
-    config = openminers.GPT4ALLMiner.config()
-    config.allow_non_registered = True
-    miner = openminers.GPT4ALLMiner( config = config, axon = axon  )
-    miner.axon.start()
+    # Load miner config
+    config = MINER.config()
 
-    # Get endpoint.
-    axon_endpoint = axon.info() 
-    axon_endpoint.ip = "127.0.0.1"
-    axon_endpoint.port = 9090
-    dendrite = bt.text_prompting( axon = axon_endpoint, keypair = wallet.hotkey )
+    # Set mock values on miner.
+    config.miner.blacklist.allow_non_registered = True
+    config.no_serve_axon = True
+    config.no_register = True
+    config.no_set_weights = True
+    config.wallet._mock = True
+    config.axon.external_ip = "127.0.0.1"
+    config.axon.port = 9090
+    bt.logging.success( f'Running benchmarks for miner: { sys.argv[1] }' )
 
-    # Make query.
-    _, roles, messages = get_mock_query()
-    forward_call = dendrite.forward( roles = roles, messages = messages, timeout = 1e6 )
-    assert forward_call.is_success == True, f'Axon forward call failed: {forward_call}'
+    # Instantiate the miner axon
+    wallet = bt.wallet.mock()
+    axon = bt.axon( wallet = wallet, config = config, metagraph = None )
+    dendrite = bt.text_prompting( axon = axon.info(), keypair = wallet.hotkey )
+    bt.logging.success( f'dendrite: { dendrite }' )
+
+    # Instantiate miner.
+    with MINER( config = config, axon = axon, wallet = wallet ) as miner:
+        for step in range( N_STEPS ):
+            _, roles, messages = get_mock_query()
+            dendrite.forward( roles = roles, messages = messages, timeout = 1e6 )
 
 if __name__ == "__main__":
-    test_direct_forward()
-    test_axon_forward()
+    run()

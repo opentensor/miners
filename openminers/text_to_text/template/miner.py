@@ -29,7 +29,7 @@ class TemplateMiner( openminers.BaseMiner ):
     def forward( self, messages: List[Dict[str, str]] ) -> str:
         return 'Hello World!'
     
-    def __init__( self, *args, **kwargs):
+    def __init__( self, *args, **kwargs ):
         super( TemplateMiner, self ).__init__( *args, **kwargs )
 
 if __name__ == "__main__":  

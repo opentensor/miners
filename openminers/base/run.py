@@ -24,14 +24,17 @@ def run( self ):
     bt.logging.info( f"Starting miner with config {self.config}" )
 
     # --- Start the miner.
-    bt.logging.info( f"Registering with wallet: {self.wallet} on netuid {self.config.netuid}" )
-    self.subtensor.register( netuid = self.config.netuid, wallet = self.wallet )
+    if not self.config.miner.no_register:
+        bt.logging.info( f"Registering with wallet: {self.wallet} on netuid {self.config.netuid}" )
+        self.subtensor.register( netuid = self.config.netuid, wallet = self.wallet )
 
-    bt.logging.info( f"Serving axon: {self.axon}" )
-    self.subtensor.serve_axon( netuid = self.config.netuid, axon = self.axon )
+    if not self.config.miner.no_serve:
+        bt.logging.info( f"Serving axon: {self.axon}" )
+        self.subtensor.serve_axon( netuid = self.config.netuid, axon = self.axon )
 
-    bt.logging.info( f"Starting axon locally on {self.axon.full_address} and serving on {self.axon.external_ip}:{self.axon.external_port}" )
-    self.axon.start()
+    if not self.config.miner.no_start_axon:
+        bt.logging.info( f"Starting axon locally on {self.axon.full_address} and serving on {self.axon.external_ip}:{self.axon.external_port}" )
+        self.axon.start()
 
     # --- Run Forever.
     last_update = self.subtensor.get_current_block()
