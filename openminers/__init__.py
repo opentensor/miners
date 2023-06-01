@@ -16,6 +16,7 @@ from .text_to_text.robertmyers.miner import RobertMyersMiner as RobertMyersMiner
 from .text_to_text.stabilityai.miner import StabilityAIMiner as StabilityAIMiner
 from .text_to_text.vicuna.miner import VicunaMiner as VicunaMiner
 from .text_to_text.cerebras.miner import CerebrasMiner as CerebrasMiner
+from .text_to_text.falcon.miner import FalconMiner as FalconMiner
 
 # Lower case imports
 from .text_to_text.template.miner import TemplateMiner as template
@@ -32,3 +33,4 @@ from .text_to_text.robertmyers.miner import RobertMyersMiner as robert
 from .text_to_text.stabilityai.miner import StabilityAIMiner as stability
 from .text_to_text.vicuna.miner import VicunaMiner as vicuna
 from .text_to_text.cerebras.miner import CerebrasMiner as cerebras
+from .text_to_text.falcon.miner import FalconMiner as falcon
