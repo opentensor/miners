@@ -20,7 +20,6 @@ import wandb
 import torch
 import argparse
 import threading
-import openminers
 import bittensor as bt
 
 from abc import ABC, abstractmethod
@@ -63,7 +62,9 @@ class BaseMiner( ABC ):
         ):
 
         # Instantiate and check config.
-        self.config = copy.deepcopy( config or BaseMiner.config() )
+        super_config = copy.deepcopy( config or BaseMiner.config() )
+        self.config = self.config()
+        self.config.merge( super_config )
         check_config( BaseMiner, self.config )
 
         # Instantiate logging.
