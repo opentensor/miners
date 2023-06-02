@@ -18,6 +18,9 @@
 from setuptools import setup, find_packages
 from pkg_resources import parse_requirements
 
+with open('requirements.txt', 'r') as f:
+    requirements = [str(req) for req in parse_requirements(f)]
+
 setup(
     name = 'openminers',
     version = "0.0.0",
@@ -47,4 +50,5 @@ setup(
         'Topic :: Software Development :: Libraries',
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
+    install_requires=requirements,
 )
