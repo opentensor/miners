@@ -3,4 +3,4 @@ bittensor
 wandb
 tqdm
 datasets
-
+openai
