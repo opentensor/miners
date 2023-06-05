@@ -1,3 +1,4 @@
 transformers==4.28.0
 einops
 accelerate
+torch>=2.0.0,<=2.0.1
