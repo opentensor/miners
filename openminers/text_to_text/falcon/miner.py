@@ -122,10 +122,7 @@ class FalconMiner( openminers.BaseMiner ):
         return generation
 
 if __name__ == "__main__":
-    miner = FalconMiner()
-    messages = [{'content': 'Hello', 'role': 'user'}, {'content': 'You are a helpful assistant who is often sarcastic.', 'role': 'system'}]
-    print(miner.forward(messages))
-    # with FalconMiner():
-    #     while True:
-    #         print ('running...', time.time() )
-    #         time.sleep( 1 )
+    with FalconMiner():
+        while True:
+            print ('running...', time.time() )
+            time.sleep( 1 )
