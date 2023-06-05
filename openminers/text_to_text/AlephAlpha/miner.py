@@ -23,7 +23,7 @@ from rich import print
 from typing import List, Dict, Optional
 from langchain.llms import AlephAlpha
 
-class AlephAlphaMiner( openminers.BaseMiner):
+class AlephAlphaMiner( openminers.BasePromptingMiner):
 
     @classmethod
     def add_args( cls, parser: argparse.ArgumentParser ):

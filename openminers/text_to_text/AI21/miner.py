@@ -22,7 +22,7 @@ import bittensor
 from typing import List, Dict, Optional
 from langchain.llms import AI21
 
-class AI21Miner( openminers.BaseMiner ):
+class AI21Miner( openminers.BasePromptingMiner ):
 
     @classmethod
     def check_config( cls, config: 'bittensor.Config' ):

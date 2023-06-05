@@ -22,7 +22,7 @@ import bittensor
 from typing import List, Dict, Optional
 from langchain.llms import Cohere
 
-class CohereMiner( openminers.BaseMiner ):
+class CohereMiner( openminers.BasePromptingMiner ):
 
     @classmethod
     def add_args( cls, parser: argparse.ArgumentParser ):

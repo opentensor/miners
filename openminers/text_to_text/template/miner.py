@@ -21,7 +21,7 @@ import bittensor
 import openminers
 from typing import List, Dict
 
-class TemplateMiner( openminers.BaseMiner ):
+class TemplateMiner( openminers.BasePromptingMiner ):
 
     @classmethod
     def add_args( cls, parser: argparse.ArgumentParser ):

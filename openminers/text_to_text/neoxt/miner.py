@@ -24,7 +24,7 @@ import bittensor
 from typing import List, Dict
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
-class NeoxtMiner( openminers.BaseMiner ):
+class NeoxtMiner( openminers.BasePromptingMiner ):
 
     @classmethod
     def add_args( cls, parser: argparse.ArgumentParser ):

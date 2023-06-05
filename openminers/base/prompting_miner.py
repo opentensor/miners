@@ -32,7 +32,7 @@ from .blacklist import blacklist
 from .mock import MockSubtensor
 from .config import config, check_config
 
-class BaseMiner( ABC ):
+class BasePromptingMiner( ABC ):
 
     @classmethod
     def config( cls ) -> "bt.Config": return config( cls )
@@ -63,14 +63,14 @@ class BaseMiner( ABC ):
 
         # Instantiate and check configs.
         # Grab super config.
-        super_config = copy.deepcopy( config or BaseMiner.config() )
+        super_config = copy.deepcopy( config or BasePromptingMiner.config() )
 
         # Grab child config
         self.config = self.config()
 
         # Merge them, but overwrite from the child config.
         self.config.merge( super_config )
-        check_config( BaseMiner, self.config )
+        check_config( BasePromptingMiner, self.config )
 
         # Instantiate logging.
         bt.logging( config = self.config, logging_dir = self.config.miner.full_path )

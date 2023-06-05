@@ -23,7 +23,7 @@ import bittensor
 from typing import List, Dict, Any, Optional
 from langchain.llms import GooseAI
 
-class GooseMiner( openminers.BaseMiner ):
+class GooseMiner( openminers.BasePromptingMiner ):
 
     @classmethod
     def add_args( cls, parser: argparse.ArgumentParser ):

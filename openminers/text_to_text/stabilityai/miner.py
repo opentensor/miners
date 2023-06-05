@@ -31,7 +31,7 @@ class StopOnTokens(StoppingCriteria):
                 return True
         return False
 
-class StabilityAIMiner( openminers.BaseMiner):
+class StabilityAIMiner( openminers.BasePromptingMiner):
 
     @classmethod
     def add_args( cls, parser: argparse.ArgumentParser ):

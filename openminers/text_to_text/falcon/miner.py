@@ -35,7 +35,7 @@ class StopOnTokens( StoppingCriteria ):
                 return True
         return False
 
-class FalconMiner( openminers.BaseMiner ):
+class FalconMiner( openminers.BasePromptingMiner ):
 
     @classmethod
     def add_args( cls, parser: argparse.ArgumentParser ):

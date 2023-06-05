@@ -24,7 +24,7 @@ import bittensor
 from typing import List, Dict
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
-class VicunaMiner( openminers.BaseMiner ):
+class VicunaMiner( openminers.BasePromptingMiner ):
 
     @classmethod
     def add_args( cls, parser: argparse.ArgumentParser ):

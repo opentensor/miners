@@ -1,5 +1,5 @@
 # Base Miner imports
-from .base.miner import BaseMiner as BaseMiner
+from .base.prompting_miner import BasePromptingMiner as BasePromptingMiner
 
 # Miner imports.
 from .text_to_text.template.miner import TemplateMiner as TemplateMiner

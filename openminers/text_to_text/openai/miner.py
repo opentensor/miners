@@ -22,7 +22,7 @@ import bittensor
 import openminers
 from typing import List, Dict, Optional
 
-class OpenAIMiner( openminers.BaseMiner ):
+class OpenAIMiner( openminers.BasePromptingMiner ):
 
     @classmethod
     def add_args( cls, parser: argparse.ArgumentParser ):

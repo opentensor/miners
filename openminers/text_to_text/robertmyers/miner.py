@@ -22,7 +22,7 @@ import openminers
 from typing import List, Dict
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 
-class RobertMyersMiner( openminers.BaseMiner ):
+class RobertMyersMiner( openminers.BasePromptingMiner ):
 
     @classmethod
     def add_args( cls, parser: argparse.ArgumentParser ):

@@ -22,7 +22,7 @@ import bittensor as bt
 from typing import List, Dict
 from langchain.llms import GPT4All
 
-class GPT4ALLMiner( openminers.BaseMiner ):
+class GPT4ALLMiner( openminers.BasePromptingMiner ):
 
     @classmethod
     def add_args( cls, parser: argparse.ArgumentParser ):
