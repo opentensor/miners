@@ -18,6 +18,7 @@
 import time
 import openai
 import argparse
+import bittensor
 import openminers
 from typing import List, Dict, Optional
 
@@ -27,13 +28,19 @@ class OpenAIMiner( openminers.BaseMiner ):
     def add_args( cls, parser: argparse.ArgumentParser ):
         parser.add_argument('--openai.api_key', type=str, help='openai api key' )
         parser.add_argument('--openai.suffix', type=str, default=None, help="The suffix that comes after a completion of inserted text.")
-        parser.add_argument('--openai.max_tokens', type=int, default=256, help="The maximum number of tokens to generate in the completion.")
-        parser.add_argument('--openai.temperature', type=float, default=0.7, help="Sampling temperature to use, between 0 and 2.")
+        parser.add_argument('--openai.max_tokens', type=int, default=100, help="The maximum number of tokens to generate in the completion.")
+        parser.add_argument('--openai.temperature', type=float, default=0.4, help="Sampling temperature to use, between 0 and 2.")
         parser.add_argument('--openai.top_p', type=float, default=1, help="Nucleus sampling parameter, top_p probability mass.")
         parser.add_argument('--openai.n', type=int, default=1, help="How many completions to generate for each prompt.")
-        parser.add_argument('--openai.presence_penalty', type=float, default=0, help="Penalty for tokens based on their presence in the text so far.")
-        parser.add_argument('--openai.frequency_penalty', type=float, default=0, help="Penalty for tokens based on their frequency in the text so far.")
+        parser.add_argument('--openai.presence_penalty', type=float, default=0.1, help="Penalty for tokens based on their presence in the text so far.")
+        parser.add_argument('--openai.frequency_penalty', type=float, default=0.1, help="Penalty for tokens based on their frequency in the text so far.")
         parser.add_argument('--openai.model_name', type=str, default='gpt-3.5-turbo', help="OpenAI model to use for completion.")
+
+    @classmethod
+    def config( cls ) -> "bittensor.Config":
+        parser = argparse.ArgumentParser( description='OpenAI Miner Configs' )
+        cls.add_args( parser )
+        return bittensor.config( parser )
 
     def __init__( self, api_key: Optional[str] = None, *args, **kwargs):
         super( OpenAIMiner, self ).__init__( *args, **kwargs )
@@ -57,5 +64,5 @@ class OpenAIMiner( openminers.BaseMiner ):
 if __name__ == "__main__":  
     with OpenAIMiner():
         while True:
-            print ('running...', time.time())
-            time.sleep(1)
+            print ( 'running...', time.time() )
+            time.sleep( 1 )

@@ -61,9 +61,14 @@ class BaseMiner( ABC ):
             synapse: "bt.Synapse" = None,
         ):
 
-        # Instantiate and check config.
+        # Instantiate and check configs.
+        # Grab super config.
         super_config = copy.deepcopy( config or BaseMiner.config() )
+
+        # Grab child config
         self.config = self.config()
+
+        # Merge them, but overwrite from the child config.
         self.config.merge( super_config )
         check_config( BaseMiner, self.config )
 

@@ -49,7 +49,7 @@ python3 benchmarks/base.py openai 100 --openai.api_key xxx...xx
 - [x] Advance telemetry through wandb.
 - [x] Add benchmarks to miners.
 - [ ] Bechmark all miners.
-- [ ] Allow in code api key and argument pass through.
+- [x] Allow in code api key and argument pass through.
 - [ ] Move set weights into its own file.
 - [ ] Maintain a history of requests per hotkey.
 - [ ] Priority based on rate limit.
