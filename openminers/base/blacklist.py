@@ -68,7 +68,14 @@ def blacklist( self, func: Callable, forward_call: "bt.TextPromptingForwardCall"
     try: 
 
         # Run the subclass blacklist function.
-        does_blacklist, reason = func(forward_call)
+        blacklist_result = func(forward_call)
+
+        # Unpack result.
+        if hasattr(blacklist_result, "__len__"):
+            does_blacklist, reason = blacklist_result
+        else:
+            does_blacklist = blacklist_result
+            reason = 'no reason provided'
     
     except NotImplementedError:
         # The subclass did not override the blacklist function.
