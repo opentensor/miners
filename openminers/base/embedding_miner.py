@@ -15,88 +15,24 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
-import copy
-import wandb
 import torch
-import argparse
-import threading
 import bittensor as bt
 
-from abc import ABC, abstractmethod
-from typing import List, Dict, Union, Tuple
+from abc import ABC
+from typing import List, Union, Tuple
 
-from .run import run
 from .forward import forward
 from .priority import priority
 from .blacklist import blacklist
-from .mock import MockSubtensor
-from .config import config, check_config
+from .miner import BaseMiner
 
-class BaseEmbeddingMiner( ABC ):
+class BaseEmbeddingMiner( BaseMiner, ABC ):
 
-    @classmethod
-    def config( cls ) -> "bt.Config": return config( cls )
+    def __init__( self, *args, **kwargs ):
+        super( BaseEmbeddingMiner, self ).__init__( *args, **kwargs )
 
-    @classmethod
-    @abstractmethod
-    def add_args( cls, parser: argparse.ArgumentParser ):
-        ...
-
-    @abstractmethod
-    def forward( self, messages: List[Dict[str, str]] ) -> str:
-        ...
-
-    def priority( self, forward_call: "bt.TextToEmbeddingForwardCall" ) -> float:
-        raise NotImplementedError('priority not implemented in subclass')
-    
-    def blacklist( self, forward_call: "bt.TextToEmbeddingForwardCall" ) -> Union[ Tuple[bool, str], bool ]:
-        raise NotImplementedError('blacklist not implemented in subclass')
-
-    def __init__( 
-            self, 
-            config: "bt.Config" = None,
-            axon: "bt.axon" = None,
-            wallet: "bt.Wallet" = None,
-            subtensor: "bt.Subtensor" = None,
-            synapse: "bt.Synapse" = None,
-        ):
-
-        # Instantiate and check configs.
-        # Grab super config.
-        super_config = copy.deepcopy( config or BaseEmbeddingMiner.config() )
-
-        # Grab child config
-        self.config = self.config()
-
-        # Merge them, but overwrite from the child config.
-        self.config.merge( super_config )
-        check_config( BaseEmbeddingMiner, self.config )
-
-        # Instantiate logging.
-        bt.logging( config = self.config, logging_dir = self.config.miner.full_path )
-
-        # Instantiate subtensor.
-        if self.config.miner.mock_subtensor:
-            self.subtensor = subtensor or MockSubtensor( self.config )
-        else:
-            self.subtensor = subtensor or bt.subtensor( self.config )
-
-        # Instantiate metagraph.
-        self.metagraph = self.subtensor.metagraph( self.config.netuid )
-
-        # Instantiate wallet.
-        self.wallet = wallet or bt.wallet( self.config )
-
-        # Instantiate axon.
-        self.axon = axon or bt.axon(
-            wallet = self.wallet,
-            metagraph = self.metagraph,
-            config = self.config,
-        )
-
-        # Define synapse.
         class Synapse( bt.TextToEmbeddingSynapse ):
-
+            
             # Build priority function.
             def priority( _, forward_call: "bt.TextToEmbeddingForwardCall" ) -> float:
                 return priority( self, self.priority, forward_call )
@@ -105,10 +41,6 @@ class BaseEmbeddingMiner( ABC ):
             # Build blacklist function.
             def blacklist( _, forward_call: "bt.TextToEmbeddingForwardCall" ) -> Union[ Tuple[bool, str], bool ]:
                 return blacklist( self, self.blacklist, forward_call )
-                # return False
-
-            # TODO: How shuld blacklist be called properly>   
-            # TODO: try this out with prompting miner and see if same thing happens.            
 
             # Build forward function.
             def forward( _, text: List[str] ) -> str:
@@ -120,42 +52,4 @@ class BaseEmbeddingMiner( ABC ):
                 pass
                   
         # Instantiate synapse.
-        self.synapse = synapse or Synapse( axon = self.axon )
-
-        # Init wandb.
-        if self.config.wandb.on:
-            wandb.init(
-                project = self.config.wandb.project_name,
-                entity = self.config.wandb.entity,
-                config = self.config,
-                mode = 'offline' if self.config.wandb.offline else 'online',
-                dir = self.config.miner.full_path,
-                magic = True,
-            )
-
-        # Instantiate runners.
-        self.should_exit: bool = False
-        self.is_running: bool = False
-        self.thread: threading.Thread = None
-
-    def run( self ): run( self )
-
-    def run_in_background_thread(self):
-        if not self.is_running:
-            bt.logging.debug( f'Starting miner background thread') 
-            self.should_exit = False
-            self.thread = threading.Thread( target = self.run, daemon = True )
-            self.thread.start()
-            self.is_running = True
-            bt.logging.debug( f'Started') 
-
-    def stop_run_thread(self):
-        if self.is_running:
-            bt.logging.debug( f'Stopping miner background thread...') 
-            self.should_exit = True
-            self.thread.join( 5 )
-            bt.logging.debug( f'Stopped') 
-
-    def __enter__( self ): self.run_in_background_thread()
-
-    def __exit__( self, exc_type, exc_value, traceback ): self.stop_run_thread()
+        self.synapse = Synapse( axon = self.axon )
