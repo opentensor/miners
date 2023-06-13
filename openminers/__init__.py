@@ -8,6 +8,7 @@ from .text_to_text.template.miner import TemplateMiner as TemplateMiner
 from .text_to_text.gpt4all.miner import GPT4ALLMiner as GPT4ALLMiner
 from .text_to_text.AI21.miner import AI21Miner as AI21Miner
 from .text_to_text.AlephAlpha.miner import AlephAlphaMiner as AlephAlphaMiner
+from .text_to_text.bloom.miner import BloomChatMiner as BloomChatMiner
 from .text_to_text.cohere.miner import CohereMiner as CohereMiner
 from .text_to_text.gooseai.miner import GooseMiner as GooseMiner
 from .text_to_text.koala.miner import KoalaMiner as KoalaMiner
@@ -25,6 +26,7 @@ from .text_to_text.template.miner import TemplateMiner as template
 from .text_to_text.gpt4all.miner import GPT4ALLMiner as gpt4all
 from .text_to_text.AI21.miner import AI21Miner as ai21
 from .text_to_text.AlephAlpha.miner import AlephAlphaMiner as alephalpha
+from .text_to_text.bloom.miner import BloomChatMiner as bloom
 from .text_to_text.cohere.miner import CohereMiner as cohere
 from .text_to_text.gooseai.miner import GooseMiner as goose
 from .text_to_text.koala.miner import KoalaMiner as koala

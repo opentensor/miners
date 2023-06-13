@@ -27,14 +27,14 @@ import os
 local_rank = int(os.getenv('LOCAL_RANK', '0'))
 world_size = int(os.getenv('WORLD_SIZE', '1'))
 
-class BloomMiner( openminers.BasePromptingMiner ):
+class BloomChatMiner( openminers.BasePromptingMiner ):
 
     @classmethod
     def add_args( cls, parser: argparse.ArgumentParser ):
         pass
 
     def __init__( self, *args, **kwargs):
-        super( BloomMiner, self ).__init__( *args, **kwargs )
+        super( BloomChatMiner, self ).__init__( *args, **kwargs )
         model_name = "sambanovasystems/BLOOMChat-176B-v1"
         tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16 )
@@ -65,7 +65,7 @@ class BloomMiner( openminers.BasePromptingMiner ):
         return resp
 
 if __name__ == "__main__":  
-    miner = BloomMiner()
+    miner = BloomChatMiner()
     miner.run()
     # with miner:
     #     while True:
