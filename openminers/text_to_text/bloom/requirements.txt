@@ -1,0 +1,5 @@
+accelerate
+bitsandbytes
+einops
+deepspeed
+transformers
