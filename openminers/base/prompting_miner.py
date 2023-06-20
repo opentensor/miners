@@ -26,15 +26,18 @@ from .forward import forward
 from .priority import priority
 from .blacklist import blacklist
 from .miner import BaseMiner
+from .config import config, check_config
 
 
 class BasePromptingMiner( BaseMiner, ABC ):
 
+    # @classmethod
+    # def config( cls ) -> "bt.Config":
+    #     parser = argparse.ArgumentParser()
+    #     cls.add_super_args( parser )
+    #     return bt.config( parser )
     @classmethod
-    def config( cls ) -> "bt.Config":
-        parser = argparse.ArgumentParser()
-        cls.add_super_args( parser )
-        return bt.config( parser )
+    def config( cls ) -> "bt.Config": return config( cls )
 
     @classmethod
     def add_super_args( cls, parser: argparse.ArgumentParser ):

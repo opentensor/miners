@@ -37,12 +37,20 @@ class LlamaMiner( openminers.BasePromptingMiner ):
 
     @classmethod
     def add_args( cls, parser: argparse.ArgumentParser ):
-        pass
+        parser.add_argument('--llama.model_size', type=int, choices=[7, 13, 30, 65], default=7, help='The size of the huggyllama/llama model to load')
+        parser.add_argument('--llama.max_tokens', type=int, default=20, help="The maximum number of tokens to generate in the completion.")
+        parser.add_argument('--llama.do_sample', type=bool, default=True, help='Description of do_sample')
+        parser.add_argument('--llama.temperature', type=float, default=1.0, help='Description of temperature')
+        parser.add_argument('--llama.top_p', type=float, default=0.95, help='Description of top_p')
+        parser.add_argument('--llama.top_k', type=int, default=10, help='Description of top_k')
+        parser.add_argument('--llama.stopping_criteria', type=str, default='stop', help='Description of stopping_criteria')
+
 
     def __init__( self, *args, **kwargs):
         super( LlamaMiner, self ).__init__( *args, **kwargs )
-        tokenizer = AutoTokenizer.from_pretrained( "huggyllama/llama-30b" )
-        config = AutoConfig.from_pretrained("huggyllama/llama-30b", trust_remote_code=True)
+        model_name = "huggyllama/llama-{}b".format( self.config.stabilityai.model_size )
+        tokenizer = AutoTokenizer.from_pretrained(model_name)
+        config = AutoConfig.from_pretrained(model_name)
         
         model_hidden_size = config.hidden_size
 
@@ -58,10 +66,6 @@ class LlamaMiner( openminers.BasePromptingMiner ):
             },
             "zero_optimization": {
                 "stage": 3,
-                # "offload_param": {
-                #     "device": "cpu",
-                #     "pin_memory": True
-                # },
                 "overlap_comm": True,
                 "contiguous_gradients": True,
                 "reduce_bucket_size": model_hidden_size * model_hidden_size,
@@ -76,7 +80,7 @@ class LlamaMiner( openminers.BasePromptingMiner ):
 
         dschf = HfDeepSpeedConfig(ds_config)
 
-        self.model = AutoModelForCausalLM.from_pretrained(  "huggyllama/llama-30b", torch_dtype=torch.float16 )
+        self.model = AutoModelForCausalLM.from_pretrained(model_name)
         ds_engine = deepspeed.initialize(model=self.model,
                                  config_params=ds_config,
                                  model_parameters=None,
@@ -101,6 +105,7 @@ class LlamaMiner( openminers.BasePromptingMiner ):
     def forward( self, messages: List[Dict[str, str]]  ) -> str:
         history = self._process_history(messages)
         resp = self.pipe( history )[0]['generated_text'].split(':')[-1].replace( str( history ), "")
+        print(resp)
         return resp
 
 if __name__ == "__main__":  

@@ -10,7 +10,12 @@ python3 openminers/text_to_text/miner/robertmyers/miner.py
 
 # Full Usage
 ```
-usage: miner.py [-h] [--robertmyers.max_new_tokens ROBERTMYERS.MAX_NEW_TOKENS] [--netuid NETUID] [--miner.name NEURON.NAME]
+usage: miner.py [-h] [--llama.model_size LLAMA.MODEL_SIZE] 
+                 [--llama.max_tokens LLAMA.MAX_TOKENS]
+                 [--llama.num_return_sequences LLAMA.NUM_RETURN_SEQUENCES]
+                 [--llama.num_beams LLAMA.NUM_BEAMS] [--llama.do_sample LLAMA.DO_SAMPLE]
+                 [--llama.temperature LLAMA.TEMPERATURE] [--llama.top_p LLAMA.TOP_P]
+                 [--llama.top_k LLAMA.TOP_K] [--llama.stopping_criteria LLAMA.STOPPING_CRITERIA]
                  [--miner.blocks_per_epoch NEURON.BLOCKS_PER_EPOCH] [--miner.no_set_weights]
                  [--miner.max_batch_size NEURON.MAX_BATCH_SIZE] [--miner.max_sequence_len NEURON.MAX_SEQUENCE_LEN]
                  [--miner.blacklist.hotkeys [NEURON.BLACKLIST.HOTKEYS ...]] [--miner.blacklist.allow_non_registered]
@@ -30,8 +35,30 @@ usage: miner.py [-h] [--robertmyers.max_new_tokens ROBERTMYERS.MAX_NEW_TOKENS] [
 
 optional arguments:
   -h, --help            show this help message and exit
-  --robertmyers.max_new_tokens ROBERTMYERS.MAX_NEW_TOKENS
-                        Max tokens for model output.
+  --llama.api_key LLAMA.API_KEY
+                        huggingface api key
+  --llama.model_size {3,7}
+                        Run the 3B or 7B model.
+  --llama.device LLAMA.DEVICE
+                        Device to load model
+  --llama.suffix LLAMA.SUFFIX
+                        The suffix that comes after a completion of inserted text.
+  --llama.max_tokens LLAMA.MAX_TOKENS
+                        The maximum number of tokens to generate in the completion.
+  --llama.num_return_sequences LLAMA.NUM_RETURN_SEQUENCES
+                        Description of num_return_sequences
+  --llama.num_beams LLAMA.NUM_BEAMS
+                        Description of num_beams
+  --llama.do_sample LLAMA.DO_SAMPLE
+                        Description of do_sample
+  --llama.temperature LLAMA.TEMPERATURE
+                        Description of temperature
+  --llama.top_p LLAMA.TOP_P
+                        Description of top_p
+  --llama.top_k LLAMA.TOP_K
+                        Description of top_k
+  --llama.stopping_criteria LLAMA.STOPPING_CRITERIA
+                        Description of 
   --netuid NETUID       Subnet netuid
   --miner.name NEURON.NAME
                         Trials for this miner go in miner.root / (wallet_cold - wallet_hot) / miner.name
