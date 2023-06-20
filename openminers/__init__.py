@@ -12,6 +12,7 @@ from .text_to_text.bloom.miner import BloomChatMiner as BloomChatMiner
 from .text_to_text.cohere.miner import CohereMiner as CohereMiner
 from .text_to_text.gooseai.miner import GooseMiner as GooseMiner
 from .text_to_text.koala.miner import KoalaMiner as KoalaMiner
+from .text_to_text.llama.miner import LlamaMiner as LlamaMiner
 from .text_to_text.neoxt.miner import NeoxtMiner as NeoxtMiner
 from .text_to_text.openai.miner import OpenAIMiner as OpenAIMiner
 from .text_to_text.pythia.miner import PythiaMiner as PythiaMiner
@@ -30,6 +31,7 @@ from .text_to_text.bloom.miner import BloomChatMiner as bloom
 from .text_to_text.cohere.miner import CohereMiner as cohere
 from .text_to_text.gooseai.miner import GooseMiner as goose
 from .text_to_text.koala.miner import KoalaMiner as koala
+from .text_to_text.llama.miner import LlamaMiner as llama
 from .text_to_text.neoxt.miner import NeoxtMiner as neoxt
 from .text_to_text.openai.miner import OpenAIMiner as openai
 from .text_to_text.pythia.miner import PythiaMiner as pythia

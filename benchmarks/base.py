@@ -38,8 +38,8 @@ def get_mock_query( ) -> List[Dict[str, str]]:
 
 def run():
     # Parse miner class.
-    MINER = getattr( openminers, sys.argv[1] )
-    N_STEPS = int(sys.argv[2]) 
+    MINER = getattr( openminers, sys.argv[2] )
+    N_STEPS = int(sys.argv[3]) 
 
     # Load miner config
     config = MINER.config()
