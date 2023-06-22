@@ -1,12 +1,21 @@
 
-## RoberMyers Miner
-Robert myers completion miner for bittensor's prompting network. 
+## Llama Miner
+Llama completion miner for bittensor's prompting network. 
 
-# Example Usage
+# Example Usage for Multi-GPU Inference
+Install the required libraries:
 ```
 python3 -m pip install -r  openminers/text_to_text/miner/robertmyers/requirements.txt
-python3 openminers/text_to_text/miner/robertmyers/miner.py
 ```
+1. using DS inference
+```
+deepspeed --num_gpus 2 openminers/text_to_text/llama/miner.pyllama --llama.model_size 7
+```
+2. using HF accelerate 
+```
+python3 openminers/text_to_text/llama/miner.py llama --llama.model_size 7
+```
+
 
 # Full Usage
 ```
