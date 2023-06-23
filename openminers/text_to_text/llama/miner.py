@@ -22,8 +22,10 @@ import openminers
 from typing import List, Dict
 from transformers import AutoTokenizer, AutoModelForCausalLM, AutoModel, pipeline, AutoConfig
 from transformers.deepspeed import HfDeepSpeedConfig
+import bittensor
 import deepspeed
 import os
+# from openbase.config import config
 
 deployment_framework = "ds_inference"
 deployment_framework = "accelerate"
@@ -32,27 +34,24 @@ class LlamaMiner( openminers.BasePromptingMiner ):
 
     @classmethod
     def add_args( cls, parser: argparse.ArgumentParser ):
-        parser.add_argument('--llama.model_size', type=int, choices=[7, 13, 30, 65], default=7, help='The size of the huggyllama/llama model to load')
+        cls.add_args(parser)
+        parser.add_argument('--deployment_framework',  type=str, choices=['accelerate', 'deepspeed'], default="accelerate", help='Inference framework to use for multi-gpu inference')
+        parser.add_argument('--llama.model_name',  type=str, default="huggyllama/llama-13b", help='Name/path of model to load')
         parser.add_argument('--llama.max_tokens', type=int, default=20, help="The maximum number of tokens to generate in the completion.")
         parser.add_argument('--llama.do_sample', type=bool, default=True, help='Description of do_sample')
         parser.add_argument('--llama.temperature', type=float, default=1.0, help='Description of temperature')
         parser.add_argument('--llama.top_p', type=float, default=0.95, help='Description of top_p')
         parser.add_argument('--llama.top_k', type=int, default=10, help='Description of top_k')
         parser.add_argument('--llama.stopping_criteria', type=str, default='stop', help='Description of stopping_criteria')
-
+        # super( LlamaMiner, cls ).add_args( parser )
 
     def __init__( self, *args, **kwargs):
         super( LlamaMiner, self ).__init__( *args, **kwargs )
-        # self.model_name = "huggyllama/llama-{}b".format( self.config.llama.model_size )
-        self.model_name = "huggyllama/llama-13b"
-        # self.model_name = "trl-lib/llama-7b-se-rl-peft"
+        # loading the tokenizer
+        breakpoint()
+        self.tokenizer = AutoTokenizer.from_pretrained(self.config.llama.model_name)
         
-        # loading the model
-        # config = AutoConfig.from_pretrained(self.model_name, trust_remote_code=True)
-        # model_hidden_size = config.hidden_size
-        self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
-        
-        if deployment_framework == "ds_inference":
+        if self.config.deployment_framework == "deepspeed":
             # distributed setup
             os.environ["TOKENIZERS_PARALLELISM"] = "false" # To avoid warnings about parallelism in tokenizers
             self.local_rank = int(os.getenv('LOCAL_RANK', '0'))
@@ -131,7 +130,7 @@ class LlamaMiner( openminers.BasePromptingMiner ):
 
     def forward( self, messages: List[Dict[str, str]]  ) -> str: 
         history = self._process_history(messages)
-        if deepspeed:
+        if self.config.deployment_framework == "deepspeed":
             t_generate_start = time.time()
             inputs = self.tokenizer.encode(history, return_tensors="pt").to(device=self.local_rank)
             with torch.no_grad():
