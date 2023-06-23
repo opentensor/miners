@@ -43,12 +43,12 @@ class LlamaMiner( openminers.BasePromptingMiner ):
         parser.add_argument('--llama.top_p', type=float, default=0.95, help='Description of top_p')
         parser.add_argument('--llama.top_k', type=int, default=10, help='Description of top_k')
         parser.add_argument('--llama.stopping_criteria', type=str, default='stop', help='Description of stopping_criteria')
-        # super( LlamaMiner, cls ).add_args( parser )
 
     def __init__( self, *args, **kwargs):
         super( LlamaMiner, self ).__init__( *args, **kwargs )
+        self.config.llama.model_name = "huggyllama/llama-13b"
+        self.config.deployment_framework  = "deepspeed"
         # loading the tokenizer
-        breakpoint()
         self.tokenizer = AutoTokenizer.from_pretrained(self.config.llama.model_name)
         
         if self.config.deployment_framework == "deepspeed":

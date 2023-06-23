@@ -19,7 +19,7 @@ python3 openminers/text_to_text/llama/miner.py llama --llama.model_size 7
 
 # Full Usage
 ```
-usage: miner.py [-h] [--llama.model_size LLAMA.MODEL_SIZE] 
+usage: miner.py [-h] [--deployment_framework DEPLOYMENT_FRAMEWOR] [--llama.model_size LLAMA.MODEL_SIZE] 
                  [--llama.max_tokens LLAMA.MAX_TOKENS]
                  [--llama.num_return_sequences LLAMA.NUM_RETURN_SEQUENCES]
                  [--llama.num_beams LLAMA.NUM_BEAMS] [--llama.do_sample LLAMA.DO_SAMPLE]

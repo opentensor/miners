@@ -10,7 +10,8 @@ NCCL_P2P_DISABLE=1 deepspeed --num_gpus 4 /root/miners/openminers/text_to_text/b
 
 # Full Usage
 ```
-usage: miner.py [-h] [--bloomchat.max_new_tokens BLOOMCHAT.MAX_NEW_TOKENS] [--netuid NETUID] [--miner.name NEURON.NAME]
+usage: miner.py [-h] [--deployment_framework DEPLOYMENT_FRAMEWOR] [--bloomchat.model_name BLOOMCHAT.MODEL_NAME] 
+                 [--bloomchat.max_new_tokens BLOOMCHAT.MAX_NEW_TOKENS] [--netuid NETUID] [--miner.name NEURON.NAME]
                  [--miner.blocks_per_epoch NEURON.BLOCKS_PER_EPOCH] [--miner.no_set_weights]
                  [--miner.max_batch_size NEURON.MAX_BATCH_SIZE] [--miner.max_sequence_len NEURON.MAX_SEQUENCE_LEN]
                  [--miner.blacklist.hotkeys [NEURON.BLACKLIST.HOTKEYS ...]] [--miner.blacklist.allow_non_registered]

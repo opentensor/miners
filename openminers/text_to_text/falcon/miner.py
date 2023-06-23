@@ -20,9 +20,12 @@ import torch
 import argparse
 import openminers
 import bittensor
+import deepspeed
+import os
 
 from typing import List, Dict
-from transformers import AutoTokenizer, pipeline, StoppingCriteria, StoppingCriteriaList
+from transformers import AutoTokenizer, pipeline, StoppingCriteria, StoppingCriteriaList, AutoModelForCausalLM
+from transformers.deepspeed import HfDeepSpeedConfig
 
 class StopOnTokens( StoppingCriteria ):
 
@@ -39,9 +42,10 @@ class FalconMiner( openminers.BasePromptingMiner ):
 
     @classmethod
     def add_args( cls, parser: argparse.ArgumentParser ):
+        parser.add_argument('--deployment_framework',  type=str, choices=['accelerate', 'deepspeed'], default="accelerate", help='Inference framework to use for multi-gpu inference')
         parser.add_argument( '--falcon.model_name', type=str, default="tiiuae/falcon-7b-instruct", help='Name/path of model to load' )
         parser.add_argument( '--falcon.device', type=int, help='Device to load model (integer GPU slot)', default=0 )
-        parser.add_argument( '--falcon.device_map', type=str, help='Device map for model', default=None )
+        parser.add_argument( '--falcon.device_map', type=str, help='Device map for model', default="auto" )
         parser.add_argument( '--falcon.max_length', type=int, help='Max tokens for model output.', default=100 )
         parser.add_argument( '--falcon.temperature', type=float, help='Sampling temperature of model', default=0.5 )
         parser.add_argument( '--falcon.top_k', type=int, help='Top k sampling of model', default=1 )
@@ -65,26 +69,81 @@ class FalconMiner( openminers.BasePromptingMiner ):
         self.stop_token_ids = self.tokenizer.convert_tokens_to_ids( ["</s>","<|endoftext|>"] )
         self.stop = StopOnTokens( self.stop_token_ids )
 
-        kwargs = dict(
-            model=self.config.falcon.model_name,
-            tokenizer=self.tokenizer,
-            torch_dtype=torch.bfloat16,
-            trust_remote_code=True,
-            temperature=self.config.falcon.temperature,
-            do_sample=self.config.falcon.do_sample,
-            device_map=self.config.falcon.device_map
-        )
+        if self.config.deployment_framework == "deepspeed":
+            # distributed setup
+            os.environ["TOKENIZERS_PARALLELISM"] = "false" # To avoid warnings about parallelism in tokenizers
+            self.local_rank = int(os.getenv('LOCAL_RANK', '0'))
+            world_size = int(os.getenv('WORLD_SIZE', '1'))
+            torch.cuda.set_device(self.local_rank)
+            deepspeed.init_distributed()
 
-        if self.config.falcon.device_map is not None:
-            kwargs['device_map'] = self.config.falcon.device_map
+            self.model = AutoModelForCausalLM.from_pretrained(self.model_name)
+            model_hidden_size = self.model.config.hidden_size
+
+            # batch size has to be divisible by world_size, but can be bigger than world_size
+            train_batch_size = 1 * world_size
+
+            # ds_config variables
+            ds_config = {
+                "fp16": {
+                    "enabled": False,
+                },
+                "bf16": {
+                    "enabled": True,
+                },
+                "zero_optimization": {
+                    "stage": 3,
+                    "overlap_comm": True,
+                    "contiguous_gradients": True,
+                    "reduce_bucket_size": model_hidden_size * model_hidden_size,
+                    "stage3_prefetch_bucket_size": 0.9 * model_hidden_size * model_hidden_size,
+                    "stage3_param_persistence_threshold": 10 * model_hidden_size
+                },
+                "steps_per_print": 2000,
+                "train_batch_size": train_batch_size,
+                "train_micro_batch_size_per_gpu": 1,
+                "wall_clock_breakdown": False
+            }
+
+            # next line instructs transformers to partition the model directly over multiple gpus using
+            # deepspeed.zero.Init when model's `from_pretrained` method is called.
+            #
+            # **it has to be run before loading the model AutoModelForSeq2SeqLM.from_pretrained(model_name)**
+            #
+            # otherwise the model will first be loaded normally and only partitioned at forward time which is
+            # less efficient and when there is little CPU RAM may fail
+            dschf = HfDeepSpeedConfig(ds_config)
+
+            # initialise deepspeed ZeRO
+            self.ds_engine = deepspeed.initialize(model=self.model,
+                                            config_params=ds_config,
+                                            model_parameters=None,
+                                            optimizer=None,
+                                            lr_scheduler=None)[0]
+            self.ds_engine.module.eval() 
+
+
         else:
-            kwargs['device'] = self.config.falcon.device
+            kwargs = dict(
+                model=self.config.falcon.model_name,
+                tokenizer=self.tokenizer,
+                torch_dtype=torch.bfloat16,
+                trust_remote_code=True,
+                temperature=self.config.falcon.temperature,
+                do_sample=self.config.falcon.do_sample,
+                device_map=self.config.falcon.device_map
+            )
 
-        self.model = pipeline( "text-generation",  **kwargs )
-        bittensor.logging.info( 'Model loaded!' )
+            if self.config.falcon.device_map is not None:
+                kwargs['device_map'] = self.config.falcon.device_map
+            else:
+                kwargs['device'] = self.config.falcon.device
 
-        if self.config.falcon.device != "cpu" and self.config.falcon.device_map is not None:
-            self.model = self.model.to( self.config.falcon.device )
+            self.model = pipeline( "text-generation",  **kwargs )
+            bittensor.logging.info( 'Model loaded!' )
+
+            if self.config.falcon.device != "cpu" and self.config.falcon.device_map is not None:
+                self.model = self.model.to( self.config.falcon.device )
 
     def _process_history( self, history: List[str] ) -> str:
         processed_history = ''
@@ -103,18 +162,29 @@ class FalconMiner( openminers.BasePromptingMiner ):
     def forward( self, messages: List[Dict[str, str]] ) -> str:
         history = self._process_history( messages )
         prompt = history + "ASSISTANT:"
-
-        generation = self.model(
-            prompt,
-            max_length=self.config.falcon.max_length,
-            do_sample=self.config.falcon.do_sample,
-            top_k=self.config.falcon.top_k,
-            num_return_sequences=self.config.falcon.num_return_sequences,
-            eos_token_id=self.tokenizer.eos_token_id,
-            pad_token_id=self.tokenizer.pad_token_id,
-            repetition_penalty=self.config.falcon.repetition_penalty,
-            stopping_criteria=StoppingCriteriaList( [self.stop] ),
-        )
+        
+        if self.config.deployment_framework == "deepspeed":
+            t_generate_start = time.time()
+            inputs = self.tokenizer.encode(history, return_tensors="pt").to(device=self.local_rank)
+            with torch.no_grad():
+                outputs = self.ds_engine.module.generate(inputs, max_length= 60)
+            generation = self.tokenizer.decode(outputs[0], skip_special_tokens=True).replace( str( history ), "")
+            print(generation)
+            t_generate_span = time.time() - t_generate_start
+            print(t_generate_span)
+        
+        else:
+            generation = self.model(
+                prompt,
+                max_length=self.config.falcon.max_length,
+                do_sample=self.config.falcon.do_sample,
+                top_k=self.config.falcon.top_k,
+                num_return_sequences=self.config.falcon.num_return_sequences,
+                eos_token_id=self.tokenizer.eos_token_id,
+                pad_token_id=self.tokenizer.pad_token_id,
+                repetition_penalty=self.config.falcon.repetition_penalty,
+                stopping_criteria=StoppingCriteriaList( [self.stop] ),
+            )
 
         # Logging input and generation if debugging is active
         bittensor.logging.debug( "Message: " + str( messages ) )
@@ -122,7 +192,8 @@ class FalconMiner( openminers.BasePromptingMiner ):
         return generation
 
 if __name__ == "__main__":
-    with FalconMiner():
-        while True:
-            print ('running...', time.time() )
-            time.sleep( 1 )
+    FalconMiner().run()
+    # with FalconMiner():
+    #     while True:
+    #         print ('running...', time.time() )
+    #         time.sleep( 1 )
