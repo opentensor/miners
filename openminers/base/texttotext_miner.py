@@ -28,7 +28,7 @@ from .blacklist import blacklist
 from .miner import BaseMiner
 
 
-class BasePromptingMiner( BaseMiner, ABC ):
+class BaseTextToTextMiner( BaseMiner, ABC ):
 
     @classmethod
     def config( cls ) -> "bt.Config":
@@ -38,7 +38,7 @@ class BasePromptingMiner( BaseMiner, ABC ):
 
     @classmethod
     def add_super_args( cls, parser: argparse.ArgumentParser ):
-        """ Add arguments specific to BasePromptingMiner to parser.
+        """ Add arguments specific to BaseTextToTextMiner to parser.
         """
         cls.add_args(parser)
         parser.add_argument(
@@ -55,7 +55,7 @@ class BasePromptingMiner( BaseMiner, ABC ):
         )
 
     def __init__( self, *args, **kwargs ):
-        super( BasePromptingMiner, self ).__init__( *args, **kwargs )
+        super( BaseTextToTextMiner, self ).__init__( *args, **kwargs )
 
         # Define synapse.
         class Synapse( bt.TextPromptingSynapse ):

@@ -1,7 +1,13 @@
 # Base Miner imports
 from .base.miner import BaseMiner as BaseMiner
-from .base.prompting_miner import BasePromptingMiner as BasePromptingMiner
 from .base.embedding_miner import BaseEmbeddingMiner as BaseEmbeddingMiner
+from .base.imagetotext_miner import BaseImageMiner as BaseImageMiner
+from .base.texttotext_miner import BaseTextToTextMiner as BaseTextToTextMiner
+from .base.texttoimage_miner import BaseTextToImageMiner as BaseTextToImageMiner
+from .base.texttovideo_miner import BaseTextToVideoMiner as BaseTextToVideoMiner
+from .base.texttospeech_miner import BaseTextToSpeechMiner as BaseTextToSpeechMiner
+from .base.speechtotext_miner import BaseSpeechToTextMiner as BaseSpeechToTextMiner
+from .base.texttomusic_miner import BaseTextToMusicMiner as BaseTextToMusicMiner
 
 # Miner imports.
 from .text_to_text.template.miner import TemplateMiner as TemplateMiner
