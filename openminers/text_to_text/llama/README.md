@@ -5,15 +5,15 @@ Llama completion miner for bittensor's prompting network.
 # Example Usage for Multi-GPU Inference
 Install the required libraries:
 ```
-python3 -m pip install -r  openminers/text_to_text/miner/robertmyers/requirements.txt
+python3 -m pip install -r  openminers/text_to_text/miner/llama/requirements.txt
 ```
 1. using DS inference
 ```
-deepspeed --num_gpus 2 openminers/text_to_text/llama/miner.pyllama --llama.model_size 7
+deepspeed --num_gpus 2 openminers/text_to_text/llama/miner.py --deployment_framework deepspeed
 ```
-2. using HF accelerate 
+2. using HF accelerate inference
 ```
-python3 openminers/text_to_text/llama/miner.py llama --llama.model_size 7
+python3 openminers/text_to_text/llama/miner.py llama --deployment_framework accelerate
 ```
 
 

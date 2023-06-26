@@ -103,7 +103,7 @@ class BloomChatMiner( openminers.BasePromptingMiner ):
             #                                 dtype=getattr(torch, int8),
             #                                 replace_with_kernel_inject=True)
             
-            self.model = AutoModelForCausalLM.from_pretrained(self.model_name, device_map="auto", load_in_8bit=True)
+            self.model = AutoModelForCausalLM.from_pretrained(self.config.bloom.model_name, device_map="auto", load_in_8bit=True)
 
             self.pipe = pipeline( 
                 "text-generation",

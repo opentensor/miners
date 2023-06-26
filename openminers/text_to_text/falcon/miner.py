@@ -42,7 +42,7 @@ class FalconMiner( openminers.BasePromptingMiner ):
 
     @classmethod
     def add_args( cls, parser: argparse.ArgumentParser ):
-        parser.add_argument('--deployment_framework',  type=str, choices=['accelerate', 'deepspeed'], default="accelerate", help='Inference framework to use for multi-gpu inference')
+        parser.add_argument( '--deployment_framework',  type=str, choices=['accelerate', 'deepspeed'], default="accelerate", help='Inference framework to use for multi-gpu inference')
         parser.add_argument( '--falcon.model_name', type=str, default="tiiuae/falcon-7b-instruct", help='Name/path of model to load' )
         parser.add_argument( '--falcon.device', type=int, help='Device to load model (integer GPU slot)', default=0 )
         parser.add_argument( '--falcon.device_map', type=str, help='Device map for model', default="auto" )
@@ -77,7 +77,7 @@ class FalconMiner( openminers.BasePromptingMiner ):
             torch.cuda.set_device(self.local_rank)
             deepspeed.init_distributed()
 
-            self.model = AutoModelForCausalLM.from_pretrained(self.model_name)
+            self.model = AutoModelForCausalLM.from_pretrained(self.config.falcon.model_name, trust_remote_code=True)
             model_hidden_size = self.model.config.hidden_size
 
             # batch size has to be divisible by world_size, but can be bigger than world_size
@@ -142,8 +142,8 @@ class FalconMiner( openminers.BasePromptingMiner ):
             self.model = pipeline( "text-generation",  **kwargs )
             bittensor.logging.info( 'Model loaded!' )
 
-            if self.config.falcon.device != "cpu" and self.config.falcon.device_map is not None:
-                self.model = self.model.to( self.config.falcon.device )
+            # if self.config.falcon.device != "cpu" and self.config.falcon.device_map is not None:
+            #     self.model = self.model.to( self.config.falcon.device )
 
     def _process_history( self, history: List[str] ) -> str:
         processed_history = ''
@@ -184,7 +184,7 @@ class FalconMiner( openminers.BasePromptingMiner ):
                 pad_token_id=self.tokenizer.pad_token_id,
                 repetition_penalty=self.config.falcon.repetition_penalty,
                 stopping_criteria=StoppingCriteriaList( [self.stop] ),
-            )
+            )[0]['generated_text'].split(':')[-1].replace( str( history ), "")
 
         # Logging input and generation if debugging is active
         bittensor.logging.debug( "Message: " + str( messages ) )
@@ -192,7 +192,13 @@ class FalconMiner( openminers.BasePromptingMiner ):
         return generation
 
 if __name__ == "__main__":
-    FalconMiner().run()
+    # FalconMiner().run()
+    prompt = """you are a chatbot that can come up with unique questions about many things."""
+    message = "ask me a random question about anything"
+    roles = ['system', 'user']
+    messages = [{"role":"system", "content":"you are a chatbot that can come up with unique questions about many things."}, {"role":"user", "content":"ask me a random question about anything"}]
+    # messages = [ prompt, message ]
+    print(FalconMiner().forward(messages))
     # with FalconMiner():
     #     while True:
     #         print ('running...', time.time() )

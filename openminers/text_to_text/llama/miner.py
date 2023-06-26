@@ -34,7 +34,6 @@ class LlamaMiner( openminers.BasePromptingMiner ):
 
     @classmethod
     def add_args( cls, parser: argparse.ArgumentParser ):
-        cls.add_args(parser)
         parser.add_argument('--deployment_framework',  type=str, choices=['accelerate', 'deepspeed'], default="accelerate", help='Inference framework to use for multi-gpu inference')
         parser.add_argument('--llama.model_name',  type=str, default="huggyllama/llama-13b", help='Name/path of model to load')
         parser.add_argument('--llama.max_tokens', type=int, default=20, help="The maximum number of tokens to generate in the completion.")
@@ -44,10 +43,16 @@ class LlamaMiner( openminers.BasePromptingMiner ):
         parser.add_argument('--llama.top_k', type=int, default=10, help='Description of top_k')
         parser.add_argument('--llama.stopping_criteria', type=str, default='stop', help='Description of stopping_criteria')
 
+    @classmethod
+    def config( cls ) -> "bittensor.Config":
+        parser = argparse.ArgumentParser( description='Falcon Miner Config' )
+        cls.add_args( parser )
+        return bittensor.config( parser )
+
     def __init__( self, *args, **kwargs):
         super( LlamaMiner, self ).__init__( *args, **kwargs )
-        self.config.llama.model_name = "huggyllama/llama-13b"
-        self.config.deployment_framework  = "deepspeed"
+        # self.config.llama.model_name = "huggyllama/llama-13b"
+        # self.config.deployment_framework  = "deepspeed"
         # loading the tokenizer
         self.tokenizer = AutoTokenizer.from_pretrained(self.config.llama.model_name)
         
@@ -59,7 +64,7 @@ class LlamaMiner( openminers.BasePromptingMiner ):
             torch.cuda.set_device(self.local_rank)
             deepspeed.init_distributed()
 
-            self.model = AutoModelForCausalLM.from_pretrained(self.model_name)
+            self.model = AutoModelForCausalLM.from_pretrained(self.config.llama.model_name)
             model_hidden_size = self.model.config.hidden_size
 
             # batch size has to be divisible by world_size, but can be bigger than world_size
@@ -155,5 +160,10 @@ class LlamaMiner( openminers.BasePromptingMiner ):
         return resp
 
 if __name__ == "__main__":  
-    miner = LlamaMiner()
-    miner.run()
+    messages = [{"role":"system", "content":"you are a chatbot that can come up with unique questions about many things."}, {"role":"user", "content":"ask me a random question about anything"}]
+    # messages = [ prompt, message ]
+    print(LlamaMiner().forward(messages))
+    # with LlamaMiner():
+    #     while True:
+    #         print ('running...', time.time() )
+    #         time.sleep( 1 )

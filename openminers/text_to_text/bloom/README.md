@@ -3,10 +3,19 @@
 BLOOMChat-176B-v1 completion miner for bittensor's prompting network. 
 
 # Example Usage
+Install the required libraries:
 ```
 python3 -m pip install -r  openminers/text_to_text/bloom/requirements.txt
-NCCL_P2P_DISABLE=1 deepspeed --num_gpus 4 /root/miners/openminers/text_to_text/bloom/miner.py
 ```
+1. using DS inference
+```
+deepspeed --num_gpus 4 openminers/text_to_text/bloom/miner.py --deployment_framework deepspeed
+```
+2. using HF accelerate inference
+```
+python3 openminers/text_to_text/bloom/miner.py --deployment_framework accelerate
+```
+
 
 # Full Usage
 ```
