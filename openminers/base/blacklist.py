@@ -53,7 +53,7 @@ def default_blacklist( self, forward_call: "bt.TextPromptingForwardCall" ) -> Un
     stake_amount = self.metagraph.S[uid].item() 
 
     # Check if the user has enough stake.
-    if stake_amount < self.config.miner.minimum_stake_requirementc:
+    if stake_amount < self.config.miner.minimum_stake_requirement:
         return True, 'hotkey does not have enough stake'
 
     # Other wise the user is not blacklisted.
