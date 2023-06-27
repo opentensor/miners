@@ -2,6 +2,7 @@
 from .base.miner import BaseMiner as BaseMiner
 from .base.prompting_miner import BasePromptingMiner as BasePromptingMiner
 from .base.embedding_miner import BaseEmbeddingMiner as BaseEmbeddingMiner
+from .base.hf_prompting_miner import HuggingFaceMiner as HuggingFaceMiner
 
 # Miner imports.
 from .text_to_text.template.miner import TemplateMiner as TemplateMiner
