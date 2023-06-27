@@ -41,14 +41,18 @@ class TemplateEmbeddingMiner( openminers.BaseEmbeddingMiner ):
     def __init__( self, *args, **kwargs ):
         super( TemplateEmbeddingMiner ).__init__( *args, **kwargs )
         self.template_arg = self.config.miner.template_arg
+        # Load your models here
 
     def blacklist( self, forward_call: "bittensor.TextToEmbeddingForwardCall" ) -> Union[ Tuple[bool, str], bool ]:
+        # Implement blacklist logic here
         return False
     
     def priority( self, forward_call: "bittensor.TextToEmbeddingForwardCall" ) -> float:
+        # Implement priority logic here
         return 0.0        
 
     def forward( self, text: List[str] ):
+        # Implement forward modality-specific logic here
         return torch.zeros( ( self.config.miner.embedding_size ) )
 
 
