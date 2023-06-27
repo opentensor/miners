@@ -48,7 +48,7 @@ def add_args( cls, parser: argparse.ArgumentParser ):
     parser.add_argument( '--miner.no_register', action = 'store_true', help = 'If True, the miner doesnt register its wallet.', default = False )
 
     # Mocks.
-    parser.add_argument( '--miner.mock_subtensor', action = 'store_true', help = 'If True, the miner will allow non-registered hotkeys to mine.', default = True )
+    parser.add_argument( '--miner.mock_subtensor', action = 'store_true', help = 'If True, the miner will allow non-registered hotkeys to mine.', default = False )
 
     # Wandb
     parser.add_argument( '--wandb.on', action = 'store_true', help = 'Turn on wandb.', default = False )
