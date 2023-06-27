@@ -28,7 +28,7 @@ def add_args( cls, parser: argparse.ArgumentParser ):
     parser.add_argument( '--miner.name', type = str, help = 'Trials for this miner go in miner.root / (wallet_cold - wallet_hot) / miner.name ', default = 'text_to_text')
 
     # Run config.
-    parser.add_argument( '--miner.blocks_per_epoch', type = str, help = 'Blocks until the miner sets weights on chain', default = 100 )
+    parser.add_argument( '--miner.blocks_per_epoch', type = str, help = 'Blocks until the miner sets weights on chain', default = 1 )
 
     # Blacklist.
     parser.add_argument( '--miner.blacklist.blacklist', type = str, required = False, nargs = '*', help = 'Blacklist certain hotkeys', default = [] )
@@ -48,13 +48,12 @@ def add_args( cls, parser: argparse.ArgumentParser ):
     parser.add_argument( '--miner.no_register', action = 'store_true', help = 'If True, the miner doesnt register its wallet.', default = False )
 
     # Mocks.
-    parser.add_argument( '--miner.mock_subtensor', action = 'store_true', help = 'If True, the miner will allow non-registered hotkeys to mine.', default = True )
+    parser.add_argument( '--miner.mock_subtensor', action = 'store_true', help = 'If True, the miner will allow non-registered hotkeys to mine.', default = False )
 
     # Wandb
     parser.add_argument( '--wandb.on', action = 'store_true', help = 'Turn on wandb.', default = False )
     parser.add_argument( '--wandb.project_name', type = str, help = 'The name of the project where youre sending the new run.', default = None )
     parser.add_argument( '--wandb.entity', type = str, help = 'An entity is a username or team name where youre sending runs.', default = None )
-    parser.add_argument( '--wandb.offline', action = 'store_true', help = 'Runs wandb in offline mode.', default = False )
 
     bt.wallet.add_args( parser )
     bt.axon.add_args( parser )

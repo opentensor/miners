@@ -75,4 +75,4 @@ def run( self ):
         
         # --- Set weights.
         if not self.config.miner.no_set_weights:
-            set_weights( self.subtensor, self.config.netuid, self.uid, self.wallet )
+            set_weights( self.subtensor, self.config.netuid, self.uid, self.wallet, self.config.wandb.on )
