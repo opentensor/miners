@@ -1,78 +1,42 @@
-# Koala Miner
-Koala Language Model Serving with BitTensor
-This code is for running the Koala model through the BitTensor framework.
+## Gpt4_x_vicuna Miner
+Gpt4_x_vicuna Language Model Serving with BitTensor
+This code is for running the Gpt4_x_vicuna by Nous Research model through the BitTensor framework.
 
 # Overview
 
 ## Contents
 
-- [Installing Dependencies](#installing-Dependencies)
-- [Converting Weights Into Model](#converting-weights-into-model)
+- [Licence](#Licence)
+- [Installing Dependencies](#installing-dependencies)
 - [Starting Miner](#starting-miner)
 
+
+# Licence
+gpl
 
 # Installing Dependencies
 
 ```
-python3 -m pip install -r neurons/text/prompting/miners/koala/requirements.txt
+python3 -m pip install -r neurons/text/prompting/miners/huggingface/gpt4_x_vicuna/requirements.txt
 ```
-
-# Converting Weights Into Model
-If you already have a converted checkpoint of the model, you can skip this step.
-
-Original documentation for creating the model from weights can be found [here](https://github.com/young-geng/EasyLM/blob/main/docs/koala.md)
-
-## Obtaining the Wegith Diff of Koala
-Due to the licence of the LLaMA model, the fine-tuned
-Koala model weights can not be directly released. Instead, the diff of weights, which can be used
-to recover the Koala model weights with the original LLaMA model weights, is released. The diff
-weights can be downloaded from the following sources:
-* [HuggingFace Hub](https://huggingface.co/young-geng/koala/tree/main).
-* [Google Drive](https://drive.google.com/drive/folders/10f7wrlAFoPIy-TECHsx9DKIvbQYunCfl?usp=sharing).
-
-## Recovering the Koala Model Weights
-The first step of recovering the Koala model weights is to obtain the original
-LLaMA model weights and convert it to EasyLM checkpoint format. To convert the weights,
-use the following command:
-
-``` shell
-python -m EasyLM.models.llama.convert_torch_to_easylm \
-    --checkpoint_dir='path/to/torch/llama/checkpoint/directory' \
-    --output_file='path/to/output/easylm/checkpoint/file' \
-    --streaming=True
-```
-
-This script will convert the official torch checkpoint from Meta to the
-streaming checkpoint format used by EasyLM. For more information
-about the checkpoint format of EasyLM, see [the checkpointing documentation](checkpointing.md).
-
-
-After converting the original LLaMA model weights, you can recover the Koala
-model weights with the following command:
-
-``` shell
-python -m EasyLM.scripts.diff_checkpoint \
-    --recover_diff=True \
-    --load_base_checkpoint='params::path/to/llama/checkpoint/file' \
-    --load_target_checkpoint='params::path/to/koala/diff/checkpoint/file' \
-    --output_file='path/to/output/checkpoint/file' \
-    --streaming=True
-```
-
 
 # Starting Miner
+To start the miner, all you need to do is to specify the path to the model, or the name on Huggingface hub, and it will be downloaded.
+
+You can find different model checkpoints by searching Huggingface, or by looking at Nous Research's Huggingface page https://huggingface.co/NousResearch
+
 ```
-python3 openminers/text_to_text/koala/miner.py
+python3 neurons/text/prompting/miners/huggingface/gpt4_x_vicuna/neuron.py --gpt4_x_vicuna.model_name GPT4_X_VICUNA.MODEL_NAME_OR_PATH
 ```
 
 # Full Usage
 ```
-usage: miner.py [-h] [--koala.model_name KOALA.MODEL_NAME] [--koala.device KOALA.DEVICE] [--koala.max_new_tokens KOALA.MAX_NEW_TOKENS]
-                 [--koala.temperature KOALA.TEMPERATURE] [--koala.do_sample] [--netuid NETUID] [--miner.name NEURON.NAME]
-                 [--miner.blocks_per_epoch NEURON.BLOCKS_PER_EPOCH] [--miner.no_set_weights]
-                 [--miner.max_batch_size NEURON.MAX_BATCH_SIZE] [--miner.max_sequence_len NEURON.MAX_SEQUENCE_LEN]
-                 [--miner.blacklist.hotkeys [NEURON.BLACKLIST.HOTKEYS ...]] [--miner.blacklist.allow_non_registered]
-                 [--miner.blacklist.default_stake NEURON.BLACKLIST.DEFAULT_STAKE] [--miner.default_priority NEURON.DEFAULT_PRIORITY]
+usage: neuron.py [-h] [--gpt4_x_vicuna.model_name GPT4_X_VICUNA.MODEL_NAME] [--gpt4_x_vicuna.device GPT4_X_VICUNA.DEVICE] [--gpt4_x_vicuna.max_new_tokens GPT4_X_VICUNA.MAX_NEW_TOKENS]
+                 [--gpt4_x_vicuna.temperature GPT4_X_VICUNA.TEMPERATURE] [--gpt4_x_vicuna.do_sample] [--netuid NETUID] [--neuron.name NEURON.NAME]
+                 [--neuron.blocks_per_epoch NEURON.BLOCKS_PER_EPOCH] [--neuron.no_set_weights]
+                 [--neuron.max_batch_size NEURON.MAX_BATCH_SIZE] [--neuron.max_sequence_len NEURON.MAX_SEQUENCE_LEN]
+                 [--neuron.blacklist.hotkeys [NEURON.BLACKLIST.HOTKEYS ...]] [--neuron.blacklist.allow_non_registered]
+                 [--neuron.blacklist.default_stake NEURON.BLACKLIST.DEFAULT_STAKE] [--neuron.default_priority NEURON.DEFAULT_PRIORITY]
                  [--wallet.name WALLET.NAME] [--wallet.hotkey WALLET.HOTKEY] [--wallet.path WALLET.PATH] [--wallet._mock]
                  [--wallet.reregister WALLET.REREGISTER] [--axon.priority.max_workers AXON.PRIORITY.MAX_WORKERS]
                  [--axon.priority.maxsize AXON.PRIORITY.MAXSIZE] [--axon.port AXON.PORT] [--axon.ip AXON.IP]
@@ -90,31 +54,31 @@ optional arguments:
   -h, --help            show this help message and exit
   --neoxt.model_name NEOXT.MODEL_NAME
                         Name/path of model to load of model to load
-  --koala.device KOALA.DEVICE
+  --gpt4_x_vicuna.device GPT4_X_VICUNA.DEVICE
                         Device to load model
-  --koala.max_new_tokens KOALA.MAX_NEW_TOKENS
+  --gpt4_x_vicuna.max_new_tokens GPT4_X_VICUNA.MAX_NEW_TOKENS
                         Max tokens for model output.
-  --koala.temperature KOALA.TEMPERATURE
+  --gpt4_x_vicuna.temperature GPT4_X_VICUNA.TEMPERATURE
                         Sampling temperature of model
-  --koala.do_sample    Whether to use sampling or not (if not, uses greedy decoding).
+  --gpt4_x_vicuna.do_sample    Whether to use sampling or not (if not, uses greedy decoding).
   --netuid NETUID       Subnet netuid
-  --miner.name NEURON.NAME
+  --neuron.name NEURON.NAME
                         Trials for this miner go in miner.root / (wallet_cold - wallet_hot) / miner.name
-  --miner.blocks_per_epoch NEURON.BLOCKS_PER_EPOCH
+  --neuron.blocks_per_epoch NEURON.BLOCKS_PER_EPOCH
                         Blocks until the miner sets weights on chain
-  --miner.no_set_weights
+  --neuron.no_set_weights
                         If True, the model does not set weights.
-  --miner.max_batch_size NEURON.MAX_BATCH_SIZE
+  --neuron.max_batch_size NEURON.MAX_BATCH_SIZE
                         The maximum batch size for forward requests.
-  --miner.max_sequence_len NEURON.MAX_SEQUENCE_LEN
+  --neuron.max_sequence_len NEURON.MAX_SEQUENCE_LEN
                         The maximum sequence length for forward requests.
-  --miner.blacklist.hotkeys [NEURON.BLACKLIST.HOTKEYS ...]
+  --neuron.blacklist.hotkeys [NEURON.BLACKLIST.HOTKEYS ...]
                         To blacklist certain hotkeys
-  --miner.blacklist.allow_non_registered
+  --neuron.blacklist.allow_non_registered
                         If True, the miner will allow non-registered hotkeys to mine.
-  --miner.blacklist.default_stake NEURON.BLACKLIST.DEFAULT_STAKE
+  --neuron.blacklist.default_stake NEURON.BLACKLIST.DEFAULT_STAKE
                         Set default stake for miners.
-  --miner.default_priority NEURON.DEFAULT_PRIORITY
+  --neuron.default_priority NEURON.DEFAULT_PRIORITY
                         Set default priority for miners.
   --wallet.name WALLET.NAME
                         The name of the wallet to unlock for running bittensor (name mock is reserved for mocking this wallet)

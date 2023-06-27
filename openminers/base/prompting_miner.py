@@ -61,11 +61,11 @@ class BasePromptingMiner( BaseMiner, ABC ):
         class Synapse( bt.TextPromptingSynapse ):
 
             # Build priority function.
-            def priority( _, forward_call: "bt.TextPromptingForwardCall" ) -> float:
+            def priority( _, forward_call: "bt.SynapseCall" ) -> float:
                 return priority( self, self.priority, forward_call )
 
             # Build blacklist function.
-            def blacklist( _, forward_call: "bt.TextPromptingForwardCall" ) -> Union[ Tuple[bool, str], bool ]:
+            def blacklist( _, forward_call: "bt.SynapseCall" ) -> Union[ Tuple[bool, str], bool ]:
                 return blacklist( self, self.blacklist, forward_call )
 
             # Build forward function.

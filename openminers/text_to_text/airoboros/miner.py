@@ -28,14 +28,14 @@ class AiroborosMiner( openminers.BasePromptingMiner ):
 
     @classmethod
     def add_args( cls, parser: argparse.ArgumentParser ):
-        parser.add_argument( '--airoboros.model_name', type=str, default="jondurbin/airoboros-13b", help='Name/path of model to load' )
-        parser.add_argument( '--airoboros.device', type=str, help='Device to load model', default=None )
-        parser.add_argument( '--airoboros.device_map', type=str, help='Map of device to model', default="auto")
-        parser.add_argument( '--airoboros.max_new_tokens', type=int, help='Max tokens for model output.', default=256 )
-        parser.add_argument( '--airoboros.temperature', type=float, help='Sampling temperature of model', default=0.5 )
-        parser.add_argument( '--airoboros.do_sample', action='store_true', default=False, help='Whether to use sampling or not (if not, uses greedy decoding).' )
-        parser.add_argument( '--airoboros.do_prompt_injection', action='store_true', default=False, help='Whether to use a custom "system" prompt instead of the one sent by bittensor.' )
-        parser.add_argument( '--airoboros.system_prompt', type=str, help='What prompt to replace the system prompt with', default= "A chat between a curious user and an artificial intelligence assistant.\nThe assistant gives helpful, detailed, and polite answers to the user's questions. " )
+        parser.add_argument( '--miner.model_name', type=str, default="jondurbin/airoboros-13b", help='Name/path of model to load' )
+        parser.add_argument( '--miner.device', type=str, help='Device to load model', default=None )
+        parser.add_argument( '--miner.device_map', type=str, help='Map of device to model', default="auto")
+        parser.add_argument( '--miner.max_new_tokens', type=int, help='Max tokens for model output.', default=256 )
+        parser.add_argument( '--miner.temperature', type=float, help='Samp ling temperature of model', default=0.5 )
+        parser.add_argument( '--miner.do_sample', action='store_true', default=False, help='Whether to use sampling or not (if not, uses greedy decoding).' )
+        parser.add_argument( '--miner.do_prompt_injection', action='store_true', default=False, help='Whether to use a custom "system" prompt instead of the one sent by bittensor.' )
+        parser.add_argument( '--miner.system_prompt', type=str, help='What prompt to replace the system prompt with', default= "A chat between a curious user and an artificial intelligence assistant.\nThe assistant gives helpful, detailed, and polite answers to the user's questions. " )
 
     @classmethod
     def config( cls ) -> "bittensor.Config":
@@ -45,26 +45,26 @@ class AiroborosMiner( openminers.BasePromptingMiner ):
 
     def __init__( self, *args, **kwargs):
         super( AiroborosMiner, self ).__init__( *args, **kwargs )
-        bittensor.logging.info( 'Loading ' + str(self.config.airoboros.model_name))
-        self.tokenizer = AutoTokenizer.from_pretrained( self.config.airoboros.model_name, use_fast=False )
+        bittensor.logging.info( 'Loading ' + str(self.config.miner.model_name))
+        self.tokenizer = AutoTokenizer.from_pretrained( self.config.miner.model_name, use_fast=False )
         self.model = AutoModelForCausalLM.from_pretrained( 
-            self.config.airoboros.model_name, 
+            self.config.miner.model_name, 
             torch_dtype=torch.float16, 
             low_cpu_mem_usage=True,
-            device_map=self.config.airoboros.device_map 
+            device_map=self.config.miner.device_map 
         )
         bittensor.logging.info( 'Model loaded!' )
 
-        if self.config.airoboros.device != "cpu":
-            self.model = self.model.to( self.config.airoboros.device )
+        if self.config.miner.device != "cpu":
+            self.model = self.model.to( self.config.miner.device )
 
     def _process_history(self, history: List[str]) -> str:
         processed_history = ''
-        if self.config.airoboros.do_prompt_injection:
-            processed_history += self.config.airoboros.system_prompt
+        if self.config.miner.do_prompt_injection:
+            processed_history += self.config.miner.system_prompt
         for message in history:
             if message['role'] == 'system':
-                if not self.config.airoboros.do_prompt_injection or message != history[0]:
+                if not self.config.miner.do_prompt_injection or message != history[0]:
                     processed_history += '' + message['content'].strip() + ' '
             if message['role'] == 'Assistant':
                 processed_history += 'ASSISTANT:' + message['content'].strip() + '</s>'
@@ -75,12 +75,12 @@ class AiroborosMiner( openminers.BasePromptingMiner ):
     def forward(self, messages: List[Dict[str, str]]) -> str:
         history = self._process_history( messages )
         prompt = history + "ASSISTANT:"
-        input_ids = self.tokenizer.encode( prompt, return_tensors="pt" ).to( self.config.airoboros.device )
+        input_ids = self.tokenizer.encode( prompt, return_tensors="pt" ).to( self.config.miner.device )
         output = self.model.generate(
             input_ids,
-            max_length=input_ids.shape[1] + self.config.airoboros.max_new_tokens,
-            temperature=self.config.airoboros.temperature,
-            do_sample=self.config.airoboros.do_sample,
+            max_length=input_ids.shape[1] + self.config.miner.max_new_tokens,
+            temperature=self.config.miner.temperature,
+            do_sample=self.config.miner.do_sample,
             pad_token_id=self.tokenizer.eos_token_id,
         )
         generation = self.tokenizer.decode( output[0][input_ids.shape[1]:], skip_special_tokens=True )
@@ -91,7 +91,8 @@ class AiroborosMiner( openminers.BasePromptingMiner ):
         return generation
 
 if __name__ == "__main__":  
-    with AiroborosMiner():
+    miner = AiroborosMiner()
+    with miner:
+        miner.forward( messages=[{'content': 'Hello, how are you?', 'role': 'user'}])
         while True:
-            print ( 'running...', time.time() )
             time.sleep( 1 )
