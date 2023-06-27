@@ -16,8 +16,8 @@
 # DEALINGS IN THE SOFTWARE.
 import time
 import wandb
-import torch
 import bittensor as bt
+from .set_weights import set_weights
 
 def run( self ):
     bt.logging.info( f"Starting miner with config {self.config}" )
@@ -75,23 +75,4 @@ def run( self ):
         
         # --- Set weights.
         if not self.config.miner.no_set_weights:
-
-            try:
-                # --- query the chain for the most current number of peers on the network
-                chain_weights = torch.zeros( self.subtensor.subnetwork_n( netuid = self.config.netuid ))
-                chain_weights[self.uid] = 1
-                self.subtensor.set_weights(
-                    uids=torch.arange(0, len(chain_weights)),
-                    netuid=self.config.netuid,
-                    weights=chain_weights,
-                    wait_for_inclusion=False,
-                    wallet=self.wallet,
-                    version_key=1
-                )
-                wandb.log( {'set_weights': 1 } )
-
-            except Exception as e:
-                # --- Set weights.
-                wandb.log( {'set_weights': 0} )
-                bt.logging.error( f"Failed to set weights on chain with exception: { e }" )
-                
+            set_weights( self.subtensor, self.config.netuid, self.uid, self.wallet, self.config.wandb.on )

@@ -96,7 +96,7 @@ class BaseMiner( ABC ):
                 project = self.config.wandb.project_name,
                 entity = self.config.wandb.entity,
                 config = self.config,
-                mode = 'offline' if self.config.wandb.offline else 'online',
+                mode = 'online' if self.config.wandb.on else 'offline',
                 dir = self.config.miner.full_path,
                 magic = True,
             )
