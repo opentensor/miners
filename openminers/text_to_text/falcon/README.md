@@ -1,30 +1,32 @@
 
-## Llama Miner
-Llama completion miner for bittensor's prompting network. 
+## Falcon Miner
+Falcon miner for bittensor's prompting network. 
 
-# Example Usage for Multi-GPU Inference
+# Example Usage
 Install the required libraries:
 ```
-python3 -m pip install -r  openminers/text_to_text/miner/llama/requirements.txt
+python3 -m pip install -r  openminers/text_to_text/falcon/requirements.txt
 ```
 1. using HF accelerate inference (default)
 ```
-python3 openminers/text_to_text/llama/miner.py llama --deployment_framework accelerate
+python3 openminers/text_to_text/bloom/miner.py --deployment_framework accelerate --falcon.model_name tiiuae/falcon-40b-instruct
 ```
 2. using DS inference
 ```
-deepspeed --num_gpus 2 openminers/text_to_text/llama/miner.py --deployment_framework deepspeed
+deepspeed --num_gpus 4 openminers/text_to_text/falcon/miner.py --deployment_framework deepspeed --falcon.model_name tiiuae/falcon-40b-instruct 
 ```
 
 
 # Full Usage
 ```
-usage: miner.py [-h] [--deployment_framework DEPLOYMENT_FRAMEWOR] [--llama.model_size LLAMA.MODEL_SIZE] 
-                 [--llama.max_tokens LLAMA.MAX_TOKENS]
-                 [--llama.num_return_sequences LLAMA.NUM_RETURN_SEQUENCES]
-                 [--llama.num_beams LLAMA.NUM_BEAMS] [--llama.do_sample LLAMA.DO_SAMPLE]
-                 [--llama.temperature LLAMA.TEMPERATURE] [--llama.top_p LLAMA.TOP_P]
-                 [--llama.top_k LLAMA.TOP_K] [--llama.stopping_criteria LLAMA.STOPPING_CRITERIA]
+usage: miner.py [-h] [--deployment_framework DEPLOYMENT_FRAMEWOR] [--falcon.model_name FALCON.MODEL_NAME] 
+                 [--falcon.device FALCON.DEVICE]
+                 [--falcon.device_map FALCON.DEVICE_MAP] [--falcon.max_length FALCON.MAX_LENGTH]
+                 [--falcon.temperature FALCON.TEMPERATURE] [--falcon.top_p FALCON.TOP_P]
+                 [--falcon.top_k LLAMA.TOP_K] [--falcon.do_sample FALCON.DO_SAMPLE]
+                 [--falcon.do_prompt_injection FALCON.DO_PROMPT_INJECTION]
+                 [--falcon.num_return_sequences FALCON.NUM_RETURN_SEQUENCES]
+                 [--falcon.repitition_penalty FALCON.REPITITION_PENALTY][--netuid NETUID] [--miner.name NEURON.NAME]
                  [--miner.blocks_per_epoch NEURON.BLOCKS_PER_EPOCH] [--miner.no_set_weights]
                  [--miner.max_batch_size NEURON.MAX_BATCH_SIZE] [--miner.max_sequence_len NEURON.MAX_SEQUENCE_LEN]
                  [--miner.blacklist.hotkeys [NEURON.BLACKLIST.HOTKEYS ...]] [--miner.blacklist.allow_non_registered]

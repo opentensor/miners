@@ -7,13 +7,13 @@ Install the required libraries:
 ```
 python3 -m pip install -r  openminers/text_to_text/bloom/requirements.txt
 ```
-1. using DS inference
-```
-deepspeed --num_gpus 4 openminers/text_to_text/bloom/miner.py --deployment_framework deepspeed
-```
-2. using HF accelerate inference
+1. using HF accelerate inference (default)
 ```
 python3 openminers/text_to_text/bloom/miner.py --deployment_framework accelerate
+```
+2. using DS inference
+```
+deepspeed --num_gpus 8 openminers/text_to_text/bloom/miner.py --deployment_framework deepspeed
 ```
 
 
@@ -40,8 +40,6 @@ usage: miner.py [-h] [--deployment_framework DEPLOYMENT_FRAMEWOR] [--bloomchat.m
 
 optional arguments:
   -h, --help            show this help message and exit
-  --bloomchat.max_new_tokens BLOOMCHAT.MAX_NEW_TOKENS
-                        Max tokens for model output.
   --netuid NETUID       Subnet netuid
   --miner.name NEURON.NAME
                         Trials for this miner go in miner.root / (wallet_cold - wallet_hot) / miner.name

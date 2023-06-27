@@ -24,7 +24,7 @@ import deepspeed
 import os
 
 from typing import List, Dict
-from transformers import AutoTokenizer, pipeline, StoppingCriteria, StoppingCriteriaList, AutoModelForCausalLM
+from transformers import AutoTokenizer, pipeline, StoppingCriteria, StoppingCriteriaList, AutoModelForCausalLM, AutoConfig
 from transformers.deepspeed import HfDeepSpeedConfig
 
 class StopOnTokens( StoppingCriteria ):
@@ -70,6 +70,7 @@ class FalconMiner( openminers.BasePromptingMiner ):
         self.stop = StopOnTokens( self.stop_token_ids )
 
         if self.config.deployment_framework == "deepspeed":
+            
             # distributed setup
             os.environ["TOKENIZERS_PARALLELISM"] = "false" # To avoid warnings about parallelism in tokenizers
             self.local_rank = int(os.getenv('LOCAL_RANK', '0'))
@@ -77,13 +78,29 @@ class FalconMiner( openminers.BasePromptingMiner ):
             torch.cuda.set_device(self.local_rank)
             deepspeed.init_distributed()
 
-            self.model = AutoModelForCausalLM.from_pretrained(self.config.falcon.model_name, trust_remote_code=True)
-            model_hidden_size = self.model.config.hidden_size
+            config = AutoConfig.from_pretrained(self.config.falcon.model_name , trust_remote_code=True)
+
+            model_hidden_size = config.hidden_size
 
             # batch size has to be divisible by world_size, but can be bigger than world_size
             train_batch_size = 1 * world_size
 
-            # ds_config variables
+            # ds_config notes
+            #
+            # - enable bf16 if you use Ampere or higher GPU - this will run in mixed precision and will be
+            # faster.
+            #
+            # - for older GPUs you can enable fp16, but it'll only work for non-bf16 pretrained models - e.g.
+            # all official t5 models are bf16-pretrained
+            #
+            # - set offload_param.device to "none" or completely remove the `offload_param` section if you don't
+            # - want CPU offload
+            #
+            # - if using `offload_param` you can manually finetune stage3_param_persistence_threshold to control
+            # - which params should remain on gpus - the larger the value the smaller the offload size
+            #
+            # For indepth info on Deepspeed config see
+            # https://huggingface.co/docs/transformers/master/main_classes/deepspeed
             ds_config = {
                 "fp16": {
                     "enabled": False,
@@ -112,7 +129,10 @@ class FalconMiner( openminers.BasePromptingMiner ):
             #
             # otherwise the model will first be loaded normally and only partitioned at forward time which is
             # less efficient and when there is little CPU RAM may fail
-            dschf = HfDeepSpeedConfig(ds_config)
+            dschf = HfDeepSpeedConfig(ds_config) # keep this object alive
+
+            # now a model can be loaded.
+            self.model = AutoModelForCausalLM.from_pretrained(model_name, trust_remote_code=True)
 
             # initialise deepspeed ZeRO
             self.ds_engine = deepspeed.initialize(model=self.model,
@@ -142,9 +162,6 @@ class FalconMiner( openminers.BasePromptingMiner ):
             self.model = pipeline( "text-generation",  **kwargs )
             bittensor.logging.info( 'Model loaded!' )
 
-            # if self.config.falcon.device != "cpu" and self.config.falcon.device_map is not None:
-            #     self.model = self.model.to( self.config.falcon.device )
-
     def _process_history( self, history: List[str] ) -> str:
         processed_history = ''
         if self.config.falcon.do_prompt_injection:
@@ -164,14 +181,10 @@ class FalconMiner( openminers.BasePromptingMiner ):
         prompt = history + "ASSISTANT:"
         
         if self.config.deployment_framework == "deepspeed":
-            t_generate_start = time.time()
             inputs = self.tokenizer.encode(history, return_tensors="pt").to(device=self.local_rank)
             with torch.no_grad():
                 outputs = self.ds_engine.module.generate(inputs, max_length= 60)
             generation = self.tokenizer.decode(outputs[0], skip_special_tokens=True).replace( str( history ), "")
-            print(generation)
-            t_generate_span = time.time() - t_generate_start
-            print(t_generate_span)
         
         else:
             generation = self.model(
@@ -192,14 +205,8 @@ class FalconMiner( openminers.BasePromptingMiner ):
         return generation
 
 if __name__ == "__main__":
-    # FalconMiner().run()
-    prompt = """you are a chatbot that can come up with unique questions about many things."""
-    message = "ask me a random question about anything"
-    roles = ['system', 'user']
-    messages = [{"role":"system", "content":"you are a chatbot that can come up with unique questions about many things."}, {"role":"user", "content":"ask me a random question about anything"}]
-    # messages = [ prompt, message ]
-    print(FalconMiner().forward(messages))
-    # with FalconMiner():
-    #     while True:
-    #         print ('running...', time.time() )
-    #         time.sleep( 1 )
+    miner = FalconMiner()
+    with miner:
+        while True:
+            print ('running...', time.time() )
+            time.sleep( 1 )

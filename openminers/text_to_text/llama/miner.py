@@ -35,7 +35,7 @@ class LlamaMiner( openminers.BasePromptingMiner ):
     @classmethod
     def add_args( cls, parser: argparse.ArgumentParser ):
         parser.add_argument('--deployment_framework',  type=str, choices=['accelerate', 'deepspeed'], default="accelerate", help='Inference framework to use for multi-gpu inference')
-        parser.add_argument('--llama.model_name',  type=str, default="huggyllama/llama-13b", help='Name/path of model to load')
+        parser.add_argument('--llama.model_name',  type=str, default="huggyllama/llama-65b", help='Name/path of model to load')
         parser.add_argument('--llama.max_tokens', type=int, default=20, help="The maximum number of tokens to generate in the completion.")
         parser.add_argument('--llama.do_sample', type=bool, default=True, help='Description of do_sample')
         parser.add_argument('--llama.temperature', type=float, default=1.0, help='Description of temperature')
@@ -51,12 +51,12 @@ class LlamaMiner( openminers.BasePromptingMiner ):
 
     def __init__( self, *args, **kwargs):
         super( LlamaMiner, self ).__init__( *args, **kwargs )
-        # self.config.llama.model_name = "huggyllama/llama-13b"
-        # self.config.deployment_framework  = "deepspeed"
+        bittensor.logging.info( 'Loading ' + str( self.config.llama.model_name ) )
         # loading the tokenizer
         self.tokenizer = AutoTokenizer.from_pretrained(self.config.llama.model_name)
-        
-        if self.config.deployment_framework == "deepspeed":
+
+        if self.config.deployment_framework == "deepspeed":        
+
             # distributed setup
             os.environ["TOKENIZERS_PARALLELISM"] = "false" # To avoid warnings about parallelism in tokenizers
             self.local_rank = int(os.getenv('LOCAL_RANK', '0'))
@@ -64,19 +64,37 @@ class LlamaMiner( openminers.BasePromptingMiner ):
             torch.cuda.set_device(self.local_rank)
             deepspeed.init_distributed()
 
-            self.model = AutoModelForCausalLM.from_pretrained(self.config.llama.model_name)
-            model_hidden_size = self.model.config.hidden_size
+            self.tokenizer = AutoTokenizer.from_pretrained(self.config.llama.model_name)
+
+            config = AutoConfig.from_pretrained(self.config.llama.model_name, trust_remote_code=True)
+
+            model_hidden_size = config.hidden_size
 
             # batch size has to be divisible by world_size, but can be bigger than world_size
             train_batch_size = 1 * world_size
 
-            # ds_config variables
+            # ds_config notes
+            #
+            # - enable bf16 if you use Ampere or higher GPU - this will run in mixed precision and will be
+            # faster.
+            #
+            # - for older GPUs you can enable fp16, but it'll only work for non-bf16 pretrained models - e.g.
+            # all official t5 models are bf16-pretrained
+            #
+            # - set offload_param.device to "none" or completely remove the `offload_param` section if you don't
+            # - want CPU offload
+            #
+            # - if using `offload_param` you can manually finetune stage3_param_persistence_threshold to control
+            # - which params should remain on gpus - the larger the value the smaller the offload size
+            #
+            # For indepth info on Deepspeed config see
+            # https://huggingface.co/docs/transformers/master/main_classes/deepspeed
             ds_config = {
                 "fp16": {
                     "enabled": False,
                 },
                 "bf16": {
-                    "enabled": True,
+                    "enabled": False,
                 },
                 "zero_optimization": {
                     "stage": 3,
@@ -99,7 +117,10 @@ class LlamaMiner( openminers.BasePromptingMiner ):
             #
             # otherwise the model will first be loaded normally and only partitioned at forward time which is
             # less efficient and when there is little CPU RAM may fail
-            dschf = HfDeepSpeedConfig(ds_config)
+            dschf = HfDeepSpeedConfig(ds_config) # keep this object alive
+
+            # now a model can be loaded.
+            self.model = AutoModelForCausalLM.from_pretrained(self.config.llama.model_name, trust_remote_code=True)
 
             # initialise deepspeed ZeRO
             self.ds_engine = deepspeed.initialize(model=self.model,
@@ -111,7 +132,7 @@ class LlamaMiner( openminers.BasePromptingMiner ):
         
         else:
 
-            self.model = AutoModelForCausalLM.from_pretrained(self.model_name, device_map="auto", torch_dtype=torch.float16, load_in_8bit=True)
+            self.model = AutoModelForCausalLM.from_pretrained(self.config.llama.model_name, device_map="auto", torch_dtype=torch.float16, load_in_8bit=True)
 
             self.pipe = pipeline( 
                 "text-generation",
@@ -157,6 +178,10 @@ class LlamaMiner( openminers.BasePromptingMiner ):
             t_generate_span = time.time() - t_generate_start
             print(resp)
             print(t_generate_span)
+
+        # Logging input and generation if debugging is active
+        bittensor.logging.debug( "Message: " + str( messages ) )
+        bittensor.logging.debug( "Generation: " + str( resp ) )
         return resp
 
 if __name__ == "__main__":  

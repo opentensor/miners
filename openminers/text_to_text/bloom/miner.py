@@ -20,9 +20,10 @@ import torch
 import argparse
 import openminers
 from typing import List, Dict
-from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
+from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline, AutoConfig
 from transformers.deepspeed import HfDeepSpeedConfig
 import deepspeed
+import bittensor
 import os
 
 local_rank = int(os.getenv('LOCAL_RANK', '0'))
@@ -36,36 +37,62 @@ class BloomChatMiner( openminers.BasePromptingMiner ):
         parser.add_argument('--bloom.model_name', type=str, default="sambanovasystems/BLOOMChat-176B-v1", help='Name/path of model to load' )
         parser.add_argument('--bloom.max_new_tokens', type=int, default=100, help='Number of new tokens to generate' )
 
+    @classmethod
+    def config( cls ) -> "bittensor.Config":
+        parser = argparse.ArgumentParser( description='Bloom Miner Config' )
+        cls.add_args( parser )
+        return bittensor.config( parser )
 
     def __init__( self, *args, **kwargs):
         super( BloomChatMiner, self ).__init__( *args, **kwargs )
-        model_name = "sambanovasystems/BLOOMChat-176B-v1"
-        tokenizer = AutoTokenizer.from_pretrained(self.config.bloom.model_name)
-        
+        bittensor.logging.info( 'Loading ' + str( self.config.bloom.model_name ) )
         if self.config.deployment_framework == "deepspeed":
 
+            # distributed setup
             os.environ["TOKENIZERS_PARALLELISM"] = "false" # To avoid warnings about parallelism in tokenizers
             self.local_rank = int(os.getenv('LOCAL_RANK', '0'))
             world_size = int(os.getenv('WORLD_SIZE', '1'))
             torch.cuda.set_device(self.local_rank)
             deepspeed.init_distributed()
 
-            self.model = AutoModelForCausalLM.from_pretrained(self.config.bloom.model_name)
-            model_hidden_size = self.model.config.hidden_size
+            self.tokenizer = AutoTokenizer.from_pretrained(self.config.bloom.model_name)
+
+            config = AutoConfig.from_pretrained(self.config.bloom.model_name, trust_remote_code=True)
+
+            model_hidden_size = config.hidden_size
 
             # batch size has to be divisible by world_size, but can be bigger than world_size
             train_batch_size = 1 * world_size
 
-            # ds_config variables
+            # ds_config notes
+            #
+            # - enable bf16 if you use Ampere or higher GPU - this will run in mixed precision and will be
+            # faster.
+            #
+            # - for older GPUs you can enable fp16, but it'll only work for non-bf16 pretrained models - e.g.
+            # all official t5 models are bf16-pretrained
+            #
+            # - set offload_param.device to "none" or completely remove the `offload_param` section if you don't
+            # - want CPU offload
+            #
+            # - if using `offload_param` you can manually finetune stage3_param_persistence_threshold to control
+            # - which params should remain on gpus - the larger the value the smaller the offload size
+            #
+            # For indepth info on Deepspeed config see
+            # https://huggingface.co/docs/transformers/master/main_classes/deepspeed
             ds_config = {
                 "fp16": {
-                    "enabled": False,
+                    "enabled": True,
                 },
                 "bf16": {
                     "enabled": False,
                 },
                 "zero_optimization": {
                     "stage": 3,
+                    "offload_param": {
+                        "device": "cpu",
+                        "pin_memory": True
+                    },
                     "overlap_comm": True,
                     "contiguous_gradients": True,
                     "reduce_bucket_size": model_hidden_size * model_hidden_size,
@@ -85,7 +112,10 @@ class BloomChatMiner( openminers.BasePromptingMiner ):
             #
             # otherwise the model will first be loaded normally and only partitioned at forward time which is
             # less efficient and when there is little CPU RAM may fail
-            dschf = HfDeepSpeedConfig(ds_config)
+            dschf = HfDeepSpeedConfig(ds_config) # keep this object alive
+
+            # now a model can be loaded.
+            self.model = AutoModelForCausalLM.from_pretrained(self.config.bloom.model_name, trust_remote_code=True)
 
             # initialise deepspeed ZeRO
             self.ds_engine = deepspeed.initialize(model=self.model,
@@ -94,22 +124,15 @@ class BloomChatMiner( openminers.BasePromptingMiner ):
                                             optimizer=None,
                                             lr_scheduler=None)[0]
             self.ds_engine.module.eval() 
-
         else:
-            # self.model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16 )
-            # self.pipe = pipeline( "text-generation", self.model, tokenizer=tokenizer, device = local_rank, max_new_tokens = 256 )
-            # self.pipe.model = deepspeed.init_inference(self.pipe.model,
-            #                                 mp_size=world_size,
-            #                                 dtype=getattr(torch, int8),
-            #                                 replace_with_kernel_inject=True)
-            
+            self.tokenizer = AutoTokenizer.from_pretrained(self.config.bloom.model_name)
+
             self.model = AutoModelForCausalLM.from_pretrained(self.config.bloom.model_name, device_map="auto", load_in_8bit=True)
 
             self.pipe = pipeline( 
                 "text-generation",
                 model=self.model,
                 tokenizer=self.tokenizer,
-                load_in_8bit=True,
                 device_map="auto",
             )
 
@@ -129,34 +152,29 @@ class BloomChatMiner( openminers.BasePromptingMiner ):
         history = self._process_history(messages)
 
         if self.config.deployment_framework == "deepspeed":
-            t_generate_start = time.time()
             inputs = self.tokenizer.encode(history, return_tensors="pt").to(device=self.local_rank)
             with torch.no_grad():
                 outputs = self.ds_engine.module.generate(inputs, max_length= 60)
             resp = self.tokenizer.decode(outputs[0], skip_special_tokens=True).replace( str( history ), "")
-            print(resp)
-            t_generate_span = time.time() - t_generate_start
-            print(t_generate_span)
         
         else:
-            t_generate_start = time.time()
             resp = self.pipe( 
                 history, 
-                max_length=200,
+                max_new_tokens=self.config.bloom.max_new_tokens,
                 do_sample=True,
                 top_k=10,
                 num_return_sequences=1,
                 eos_token_id=self.tokenizer.eos_token_id, 
             )[0]['generated_text'].split(':')[-1].replace( str( history ), "")
-            t_generate_span = time.time() - t_generate_start
-            print(resp)
-            print(t_generate_span)
+        
+        # Logging input and generation if debugging is active
+        bittensor.logging.debug( "Message: " + str( messages ) )
+        bittensor.logging.debug( "Generation: " + str( resp ) )
         return resp
 
 if __name__ == "__main__":  
     miner = BloomChatMiner()
-    miner.run()
-    # with miner:
-    #     while True:
-    #         print ('running...', time.time())
-    #         time.sleep(1)
+    with miner:
+        while True:
+            print ('running...', time.time())
+            time.sleep(1)
