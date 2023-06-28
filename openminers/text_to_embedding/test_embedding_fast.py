@@ -24,9 +24,9 @@ import bittensor as bt
 # Enable tracing for bittensor. This provides detailed logs about the operations.
 bt.trace()
 
-# This is the hotkey for your miner. You must register this unless you set --blacklist.allow_non_registered 
+# This is the hotkey for your miner. You must register this unless you set --blacklist.allow_non_registered
 # to true in the config or return False in the Synapse().blacklist() function.
-hotkey = '<Your hotkey here>'
+hotkey = "<Your hotkey here>"
 
 # This is the text for which you want to generate the embedding.
 text = "(beautiful) (best quality) mdjrny-v4 style Pepe the frog enormous, surrounded by colorful sea creatures and plants, - surreal, Dreamlike, ethereal lighting, Highly detailed, Intricate, Digital painting, Artstation, Concept art, Smooth, Sharp focus, Fantasy, trending on art websites, art by magali villeneuve and jock and ashley wood and rachel lee and loish"
@@ -34,16 +34,15 @@ text = "(beautiful) (best quality) mdjrny-v4 style Pepe the frog enormous, surro
 # Alternatively, you can also use a list of texts.
 texts = ["This is a list of strings", "A second string"]
 
-# Package the request to be parsed by a Pydantic BaseModel on the server. This object should include all 
+# Package the request to be parsed by a Pydantic BaseModel on the server. This object should include all
 # parameters needed for your miner to perform its task.
-data = {
-  "text": text,
-  "timeout": 12,
-}
+data = {"text": text, "timeout": 12}
 
 # Send the request to the server and print the response. This request is sent to the /TextToEmbedding/Forward endpoint.
 # Replace this endpoint with your miner's endpoint for different modalities.
-req = requests.post('http://127.0.0.1:8092/TextToEmbedding/Forward/?hotkey={}'.format(hotkey), json=data)
+req = requests.post(
+    "http://127.0.0.1:8092/TextToEmbedding/Forward/?hotkey={}".format(hotkey), json=data
+)
 print(req)
 print(req.text)
 

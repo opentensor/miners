@@ -18,37 +18,36 @@
 from setuptools import setup, find_packages
 from pkg_resources import parse_requirements
 
-with open('requirements.txt', 'r') as f:
+with open("requirements.txt", "r") as f:
     requirements = [str(req) for req in parse_requirements(f)]
 
 setup(
-    name = 'openminers',
-    version = "0.0.0",
-    description = 'Openminers is a collection of open source miners for bittensor',
-    url = 'https://github.com/opentensor/bittensor',
-    author = 'bittensor.com',
-    packages = [ 'openminers' ],
-    include_package_data = True,
-    author_email = '',
-    license = 'MIT',
-    python_requires = '>=3.8',
+    name="openminers",
+    version="0.0.0",
+    description="Openminers is a collection of open source miners for bittensor",
+    url="https://github.com/opentensor/bittensor",
+    author="bittensor.com",
+    packages=["openminers"],
+    include_package_data=True,
+    author_email="",
+    license="MIT",
+    python_requires=">=3.8",
     classifiers=[
-        'Development Status :: 3 - Alpha',
-        'Intended Audience :: Developers',
-        'Topic :: Software Development :: Build Tools',
-
+        "Development Status :: 3 - Alpha",
+        "Intended Audience :: Developers",
+        "Topic :: Software Development :: Build Tools",
         # Pick your license as you wish
-        'License :: OSI Approved :: MIT License',
-        'Programming Language :: Python :: 3 :: Only',
-        'Programming Language :: Python :: 3.8',
-        'Programming Language :: Python :: 3.9',
-        'Programming Language :: Python :: 3.10',
-        'Topic :: Scientific/Engineering',
-        'Topic :: Scientific/Engineering :: Mathematics',
-        'Topic :: Scientific/Engineering :: Artificial Intelligence',
-        'Topic :: Software Development',
-        'Topic :: Software Development :: Libraries',
-        'Topic :: Software Development :: Libraries :: Python Modules',
+        "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python :: 3 :: Only",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Topic :: Scientific/Engineering",
+        "Topic :: Scientific/Engineering :: Mathematics",
+        "Topic :: Scientific/Engineering :: Artificial Intelligence",
+        "Topic :: Software Development",
+        "Topic :: Software Development :: Libraries",
+        "Topic :: Software Development :: Libraries :: Python Modules",
     ],
     install_requires=requirements,
 )

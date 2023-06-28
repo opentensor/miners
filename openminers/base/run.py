@@ -19,60 +19,75 @@ import wandb
 import bittensor as bt
 from .set_weights import set_weights
 
-def run( self ):
-    bt.logging.info( f"Starting miner with config {self.config}" )
+
+def run(self):
+    bt.logging.info(f"Starting miner with config {self.config}")
 
     # --- Optionally register the wallet.
     if not self.config.miner.no_register:
-        bt.logging.info( f"Registering with wallet: {self.wallet} on netuid {self.config.netuid}" )
-        self.subtensor.register( netuid = self.config.netuid, wallet = self.wallet )
+        bt.logging.info(
+            f"Registering with wallet: {self.wallet} on netuid {self.config.netuid}"
+        )
+        self.subtensor.register(netuid=self.config.netuid, wallet=self.wallet)
 
     # --- Optionally server the axon.
     if not self.config.miner.no_serve:
-        bt.logging.info( f"Serving axon: {self.axon}" )
-        self.subtensor.serve_axon( netuid = self.config.netuid, axon = self.axon )
+        bt.logging.info(f"Serving axon: {self.axon}")
+        self.subtensor.serve_axon(netuid=self.config.netuid, axon=self.axon)
 
     # --- Optionally start the axon.
     if not self.config.miner.no_start_axon:
-        bt.logging.info( f"Starting axon locally on {self.axon.full_address} and serving on {self.axon.external_ip}:{self.axon.external_port}" )
+        bt.logging.info(
+            f"Starting axon locally on {self.axon.full_address} and serving on {self.axon.external_ip}:{self.axon.external_port}"
+        )
         self.axon.start()
 
     # --- Run until should_exit = True.
     self.last_epoch_block = self.subtensor.get_current_block()
-    bt.logging.info( f"Miner starting at block: { self.last_epoch_block }" )
+    bt.logging.info(f"Miner starting at block: { self.last_epoch_block }")
     while not self.should_exit:
         start_epoch = time.time()
 
         # --- Wait until next epoch.
         current_block = self.subtensor.get_current_block()
-        while (current_block - self.last_epoch_block) < self.config.miner.blocks_per_epoch:
+        while (
+            current_block - self.last_epoch_block
+        ) < self.config.miner.blocks_per_epoch:
 
             # --- Wait for next block.
-            time.sleep( 1 )
+            time.sleep(1)
             current_block = self.subtensor.get_current_block()
 
             # --- Check if we should exit.
-            if self.should_exit: break
+            if self.should_exit:
+                break
 
         # --- Update the metagraph with the latest network state.
         self.last_epoch_block = self.subtensor.get_current_block()
-        self.metagraph.sync( lite = False )
-        self.uid = self.metagraph.hotkeys.index( self.wallet.hotkey.ss58_address )
+        self.metagraph.sync(lite=False)
+        self.uid = self.metagraph.hotkeys.index(self.wallet.hotkey.ss58_address)
 
         # --- Log performance.
         step_log = {
-            'epoch_time': time.time() - start_epoch,
-            'block': self.last_epoch_block,
-            'uid': self.wallet.hotkey.ss58_address,
-            'stake': self.metagraph.S[self.uid].item(),
-            'trust': self.metagraph.T[self.uid].item(),
-            'incentive': self.metagraph.I[self.uid].item(),
-            'consensus': self.metagraph.C[self.uid].item(),
-            'dividends': self.metagraph.D[self.uid].item(),
+            "epoch_time": time.time() - start_epoch,
+            "block": self.last_epoch_block,
+            "uid": self.wallet.hotkey.ss58_address,
+            "stake": self.metagraph.S[self.uid].item(),
+            "trust": self.metagraph.T[self.uid].item(),
+            "incentive": self.metagraph.I[self.uid].item(),
+            "consensus": self.metagraph.C[self.uid].item(),
+            "dividends": self.metagraph.D[self.uid].item(),
         }
-        bt.logging.info( str(step_log) )
-        if self.config.wandb.on: wandb.log( step_log )
-        
+        bt.logging.info(str(step_log))
+        if self.config.wandb.on:
+            wandb.log(step_log)
+
         # --- Set weights.
         if not self.config.miner.no_set_weights:
-            set_weights( self.subtensor, self.config.netuid, self.uid, self.wallet, self.config.wandb.on )
+            set_weights(
+                self.subtensor,
+                self.config.netuid,
+                self.uid,
+                self.wallet,
+                self.config.wandb.on,
+            )

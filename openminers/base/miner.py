@@ -29,76 +29,76 @@ from .mock import MockSubtensor
 from .config import config, check_config
 
 
-class BaseMiner( ABC ):
-
+class BaseMiner(ABC):
     @classmethod
-    def config( cls ) -> "bt.Config": return config( cls )
+    def config(cls) -> "bt.Config":
+        return config(cls)
 
     @classmethod
     @abstractmethod
-    def add_args( cls, parser: argparse.ArgumentParser ):
+    def add_args(cls, parser: argparse.ArgumentParser):
         ...
 
     @abstractmethod
-    def forward( self, messages: List[Dict[str, str]] ) -> str:
+    def forward(self, messages: List[Dict[str, str]]) -> str:
         ...
 
-    def priority( self, forward_call: "bt.TextPromptingForwardCall" ) -> float:
-        raise NotImplementedError('priority not implemented in subclass')
-    
-    def blacklist( self, forward_call: "bt.TextPromptingForwardCall" ) -> Union[ Tuple[bool, str], bool ]:
-        raise NotImplementedError('blacklist not implemented in subclass')
+    def priority(self, forward_call: "bt.TextPromptingForwardCall") -> float:
+        raise NotImplementedError("priority not implemented in subclass")
 
-    def __init__( 
-            self, 
-            config: "bt.Config" = None,
-            axon: "bt.axon" = None,
-            wallet: "bt.Wallet" = None,
-            subtensor: "bt.Subtensor" = None,
-        ):
+    def blacklist(
+        self, forward_call: "bt.TextPromptingForwardCall"
+    ) -> Union[Tuple[bool, str], bool]:
+        raise NotImplementedError("blacklist not implemented in subclass")
+
+    def __init__(
+        self,
+        config: "bt.Config" = None,
+        axon: "bt.axon" = None,
+        wallet: "bt.Wallet" = None,
+        subtensor: "bt.Subtensor" = None,
+    ):
 
         # Instantiate and check configs.
         # Grab super config.
-        super_config = copy.deepcopy( config or BaseMiner.config() )
+        super_config = copy.deepcopy(config or BaseMiner.config())
 
         # Grab child config
         self.config = self.config()
 
         # Merge them, but overwrite from the child config.
-        self.config.merge( super_config )
-        check_config( BaseMiner, self.config )
+        self.config.merge(super_config)
+        check_config(BaseMiner, self.config)
 
         # Instantiate logging.
-        bt.logging( config = self.config, logging_dir = self.config.miner.full_path )
+        bt.logging(config=self.config, logging_dir=self.config.miner.full_path)
 
         # Instantiate subtensor.
         if self.config.miner.mock_subtensor:
-            self.subtensor = subtensor or MockSubtensor( self.config )
+            self.subtensor = subtensor or MockSubtensor(self.config)
         else:
-            self.subtensor = subtensor or bt.subtensor( self.config )
+            self.subtensor = subtensor or bt.subtensor(self.config)
 
         # Instantiate metagraph.
-        self.metagraph = self.subtensor.metagraph( self.config.netuid )
+        self.metagraph = self.subtensor.metagraph(self.config.netuid)
 
         # Instantiate wallet.
-        self.wallet = wallet or bt.wallet( self.config )
+        self.wallet = wallet or bt.wallet(self.config)
 
         # Instantiate axon.
         self.axon = axon or bt.axon(
-            wallet = self.wallet,
-            metagraph = self.metagraph,
-            config = self.config,
+            wallet=self.wallet, metagraph=self.metagraph, config=self.config
         )
 
         # Init wandb.
         if self.config.wandb.on:
             wandb.init(
-                project = self.config.wandb.project_name,
-                entity = self.config.wandb.entity,
-                config = self.config,
-                mode = 'online' if self.config.wandb.on else 'offline',
-                dir = self.config.miner.full_path,
-                magic = True,
+                project=self.config.wandb.project_name,
+                entity=self.config.wandb.entity,
+                config=self.config,
+                mode="online" if self.config.wandb.on else "offline",
+                dir=self.config.miner.full_path,
+                magic=True,
             )
 
         # Instantiate runners.
@@ -106,25 +106,27 @@ class BaseMiner( ABC ):
         self.is_running: bool = False
         self.thread: threading.Thread = None
 
-    def run( self ): run( self )
+    def run(self):
+        run(self)
 
     def run_in_background_thread(self):
         if not self.is_running:
-            bt.logging.debug( f'Starting miner background thread') 
+            bt.logging.debug(f"Starting miner background thread")
             self.should_exit = False
-            self.thread = threading.Thread( target = self.run, daemon = True )
+            self.thread = threading.Thread(target=self.run, daemon=True)
             self.thread.start()
             self.is_running = True
-            bt.logging.debug( f'Started') 
+            bt.logging.debug(f"Started")
 
     def stop_run_thread(self):
         if self.is_running:
-            bt.logging.debug( f'Stopping miner background thread...') 
+            bt.logging.debug(f"Stopping miner background thread...")
             self.should_exit = True
-            self.thread.join( 5 )
-            bt.logging.debug( f'Stopped') 
+            self.thread.join(5)
+            bt.logging.debug(f"Stopped")
 
-    def __enter__( self ): self.run_in_background_thread()
+    def __enter__(self):
+        self.run_in_background_thread()
 
-    def __exit__( self, exc_type, exc_value, traceback ): self.stop_run_thread()
-
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.stop_run_thread()
