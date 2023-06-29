@@ -80,7 +80,8 @@ class BaseMiner(ABC):
             self.subtensor = subtensor or bt.subtensor(self.config)
 
         # Instantiate metagraph.
-        self.metagraph = self.subtensor.metagraph(self.config.netuid)
+        self.metagraph = self.subtensor.metagraph(self.config.netuid, sync=False)
+        self.metagraph.sync(lite = True, subtensor=self.subtensor)
 
         # Instantiate wallet.
         self.wallet = wallet or bt.wallet(self.config)
