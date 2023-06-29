@@ -22,7 +22,7 @@ python setup.py install
 # Example Usage for Multi-GPU Inference
 1. using HF accelerate inference (default)
 ```
-python3 openminers/text_to_text/llama/miner.py llama --deployment_framework accelerate
+python3 openminers/text_to_text/llama/miner.py --deployment_framework accelerate
 ```
 2. using DS inference
 ```
