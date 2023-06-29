@@ -37,22 +37,11 @@ python3 benchmarks/base.py openai 100 --openai.api_key xxx...xx
 ```
 
 # TODO
-- [x] Create this repo.
-- [x] Add setup.py.
-- [x] Add template text_to_text miner.
-- [x] Add template text_to_text forward tests.
-- [x] Add benchmarks.
-- [x] Add Wandb to miner.
-- [x] Add more miners.
-- [x] Advance blacklist function.
-- [x] Advance priority function.
-- [x] Advance telemetry through wandb.
-- [x] Add benchmarks to miners.
+- [ ] Add benchmarks to miners.
 - [ ] Bechmark all miners.
-- [x] Allow in code api key and argument pass through.
-- [ ] Move set weights into its own file.
 - [ ] Maintain a history of requests per hotkey.
 - [ ] Priority based on rate limit.
 - [ ] Blacklist based on rate limit.
 - [ ] Benchmark longer and shorter request sizes.
 - [ ] Benchmark from dataset.
+- [ ] Add multimodal miners.

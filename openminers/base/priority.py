@@ -19,7 +19,8 @@ import wandb
 import bittensor as bt
 from typing import List, Dict, Union, Tuple, Callable
 
-def default_priority( self, forward_call: "bt.TextPromptingForwardCall" ) -> float:
+
+def default_priority(self, forward_call: "bt.TextPromptingForwardCall") -> float:
     # Check if the key is registered.
     registered = False
     if self.metagraph is not None:
@@ -30,34 +31,38 @@ def default_priority( self, forward_call: "bt.TextPromptingForwardCall" ) -> flo
         return self.config.miner.priority.default
 
     # If the user is registered, it has a UID.
-    uid = self.metagraph.hotkeys.index( forward_call.src_hotkey )
-    stake_amount = self.metagraph.S[uid].item() 
+    uid = self.metagraph.hotkeys.index(forward_call.src_hotkey)
+    stake_amount = self.metagraph.S[uid].item()
     return stake_amount
 
-def priority( self, func: Callable, forward_call: "bt.TextPromptingForwardCall" ) -> float:
+
+def priority(
+    self, func: Callable, forward_call: "bt.TextPromptingForwardCall"
+) -> float:
 
     # Check to see if the subclass has implemented a priority function.
     priority = None
-    try: 
+    try:
 
         # Call the subclass priority function and return the result.
         priority = func(forward_call)
-    
+
     except NotImplementedError:
         # If the subclass has not implemented a priority function, we use the default priority.
         priority = default_priority(self, forward_call)
 
     except Exception as e:
         # An error occured in the subclass priority function.
-        bt.logging.error( f'Error in priority function: {e}') 
-    
+        bt.logging.error(f"Error in priority function: {e}")
+
     finally:
         # If the priority is None, we use the default priority.
-        if priority == None: 
+        if priority == None:
             priority = default_priority(self, forward_call)
 
         # Log the priority to wandb.
-        if self.config.wandb.on: wandb.log( { 'priority': priority, 'hotkey': forward_call.src_hotkey } )
+        if self.config.wandb.on:
+            wandb.log({"priority": priority, "hotkey": forward_call.src_hotkey})
 
         # Return the priority.
         return priority

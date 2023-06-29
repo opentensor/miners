@@ -29,51 +29,60 @@ from .miner import BaseMiner
 from .config import config, check_config
 
 
-class BasePromptingMiner( BaseMiner, ABC ):
+class BasePromptingMiner(BaseMiner, ABC):
+    @classmethod
+    def config(cls) -> "bt.Config":
+        parser = argparse.ArgumentParser()
+        cls.add_super_args(parser)
+        return bt.config(parser)
 
     @classmethod
-    def config( cls ) -> "bt.Config": return config( cls )
-
-    @classmethod
-    def add_super_args( cls, parser: argparse.ArgumentParser ):
+    def add_super_args(cls, parser: argparse.ArgumentParser):
         """ Add arguments specific to BasePromptingMiner to parser.
         """
         cls.add_args(parser)
         parser.add_argument(
-            '--neuron.max_batch_size', 
-            type = int, 
-            help = 'The maximum batch size for forward requests.',
-            default = -1
+            "--neuron.max_batch_size",
+            type=int,
+            help="The maximum batch size for forward requests.",
+            default=-1,
         )
         parser.add_argument(
-            '--neuron.max_sequence_len', 
-            type = int, 
-            help = 'The maximum sequence length for forward requests.',
-            default = -1
+            "--neuron.max_sequence_len",
+            type=int,
+            help="The maximum sequence length for forward requests.",
+            default=-1,
         )
 
-    def __init__( self, *args, **kwargs ):
-        super( BasePromptingMiner, self ).__init__( *args, **kwargs )
+    def __init__(self, *args, **kwargs):
+        super(BasePromptingMiner, self).__init__(*args, **kwargs)
 
         # Define synapse.
-        class Synapse( bt.TextPromptingSynapse ):
+        class Synapse(bt.TextPromptingSynapse):
 
             # Build priority function.
-            def priority( _, forward_call: "bt.TextPromptingForwardCall" ) -> float:
-                return priority( self, self.priority, forward_call )
+            def priority(_, forward_call: "bt.TextPromptingForwardCall") -> float:
+                return priority(self, self.priority, forward_call)
 
             # Build blacklist function.
-            def blacklist( _, forward_call: "bt.TextPromptingForwardCall" ) -> Union[ Tuple[bool, str], bool ]:
-                return blacklist( self, self.blacklist, forward_call )
+            def blacklist(
+                _, forward_call: "bt.TextPromptingForwardCall"
+            ) -> Union[Tuple[bool, str], bool]:
+                return blacklist(self, self.blacklist, forward_call)
 
             # Build forward function.
-            def forward( _, messages: List[Dict[str, str]] ) -> str:
-                return forward( self, self.forward, messages )    
+            def forward(_, messages: List[Dict[str, str]]) -> str:
+                return forward(self, self.forward, messages)
 
             # Build backward function.
             # TODO(const): accept this.
-            def backward( self, messages: List[Dict[str, str]], response: str, rewards: torch.FloatTensor ) -> str: 
+            def backward(
+                self,
+                messages: List[Dict[str, str]],
+                response: str,
+                rewards: torch.FloatTensor,
+            ) -> str:
                 pass
 
         # Instantiate synapse.
-        self.synapse = Synapse( axon = self.axon )
+        self.synapse = Synapse(axon=self.axon)

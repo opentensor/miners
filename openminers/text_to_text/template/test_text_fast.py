@@ -30,12 +30,12 @@ import bittensor as bt
 # Enable tracing for bittensor. This provides detailed logs about the operations.
 bt.trace()
 
-# This is the hotkey for your miner. You must register this unless you set --blacklist.allow_non_registered 
+# This is the hotkey for your miner. You must register this unless you set --blacklist.allow_non_registered
 # to true in the config or return False in the Synapse().blacklist() function.
-hotkey = '5C86aJ2uQawR6P6veaJQXNK9HaWh6NMbUhTiLs65kq4ZW3NH'
+hotkey = "5C86aJ2uQawR6P6veaJQXNK9HaWh6NMbUhTiLs65kq4ZW3NH"
 
 # Here we prepare the data object which will be sent as a POST request to the server. This includes
-# a list of "roles" and "messages". "roles" indicate who said each message in the "messages" list. 
+# a list of "roles" and "messages". "roles" indicate who said each message in the "messages" list.
 # "system" and "user" are example roles here. You can add as many messages as you want, in the order
 # they are said. Finally, a timeout value is provided to avoid waiting indefinitely for a response.
 data = {
@@ -44,10 +44,13 @@ data = {
     "timeout": 12,
 }
 
-# The post request is sent to the /TextToCompletion/Forward endpoint of the server, 
-# including the hotkey and data in the request. The server is expected to take the 
+# The post request is sent to the /TextToCompletion/Forward endpoint of the server,
+# including the hotkey and data in the request. The server is expected to take the
 # roles and messages, perform the necessary operations, and return the completed text.
-req = requests.post('http://127.0.0.1:8092/TextToCompletion/Forward/?hotkey={}'.format(hotkey), json=data)
+req = requests.post(
+    "http://127.0.0.1:8092/TextToCompletion/Forward/?hotkey={}".format(hotkey),
+    json=data,
+)
 
 # Print the status and content of the response from the server.
 print(req)

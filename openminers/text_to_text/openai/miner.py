@@ -22,47 +22,90 @@ import bittensor
 import openminers
 from typing import List, Dict, Optional
 
-class OpenAIMiner( openminers.BasePromptingMiner ):
+
+class OpenAIMiner(openminers.BasePromptingMiner):
+    @classmethod
+    def add_args(cls, parser: argparse.ArgumentParser):
+        parser.add_argument("--openai.api_key", type=str, help="openai api key")
+        parser.add_argument(
+            "--openai.suffix",
+            type=str,
+            default=None,
+            help="The suffix that comes after a completion of inserted text.",
+        )
+        parser.add_argument(
+            "--openai.max_tokens",
+            type=int,
+            default=100,
+            help="The maximum number of tokens to generate in the completion.",
+        )
+        parser.add_argument(
+            "--openai.temperature",
+            type=float,
+            default=0.4,
+            help="Sampling temperature to use, between 0 and 2.",
+        )
+        parser.add_argument(
+            "--openai.top_p",
+            type=float,
+            default=1,
+            help="Nucleus sampling parameter, top_p probability mass.",
+        )
+        parser.add_argument(
+            "--openai.n",
+            type=int,
+            default=1,
+            help="How many completions to generate for each prompt.",
+        )
+        parser.add_argument(
+            "--openai.presence_penalty",
+            type=float,
+            default=0.1,
+            help="Penalty for tokens based on their presence in the text so far.",
+        )
+        parser.add_argument(
+            "--openai.frequency_penalty",
+            type=float,
+            default=0.1,
+            help="Penalty for tokens based on their frequency in the text so far.",
+        )
+        parser.add_argument(
+            "--openai.model_name",
+            type=str,
+            default="gpt-3.5-turbo",
+            help="OpenAI model to use for completion.",
+        )
 
     @classmethod
-    def add_args( cls, parser: argparse.ArgumentParser ):
-        parser.add_argument('--openai.api_key', type=str, help='openai api key' )
-        parser.add_argument('--openai.suffix', type=str, default=None, help="The suffix that comes after a completion of inserted text.")
-        parser.add_argument('--openai.max_tokens', type=int, default=100, help="The maximum number of tokens to generate in the completion.")
-        parser.add_argument('--openai.temperature', type=float, default=0.4, help="Sampling temperature to use, between 0 and 2.")
-        parser.add_argument('--openai.top_p', type=float, default=1, help="Nucleus sampling parameter, top_p probability mass.")
-        parser.add_argument('--openai.n', type=int, default=1, help="How many completions to generate for each prompt.")
-        parser.add_argument('--openai.presence_penalty', type=float, default=0.1, help="Penalty for tokens based on their presence in the text so far.")
-        parser.add_argument('--openai.frequency_penalty', type=float, default=0.1, help="Penalty for tokens based on their frequency in the text so far.")
-        parser.add_argument('--openai.model_name', type=str, default='gpt-3.5-turbo', help="OpenAI model to use for completion.")
+    def config(cls) -> "bittensor.Config":
+        parser = argparse.ArgumentParser(description="OpenAI Miner Configs")
+        cls.add_args(parser)
+        return bittensor.config(parser)
 
-    @classmethod
-    def config( cls ) -> "bittensor.Config":
-        parser = argparse.ArgumentParser( description='OpenAI Miner Configs' )
-        cls.add_args( parser )
-        return bittensor.config( parser )
-
-    def __init__( self, api_key: Optional[str] = None, *args, **kwargs):
-        super( OpenAIMiner, self ).__init__( *args, **kwargs )
+    def __init__(self, api_key: Optional[str] = None, *args, **kwargs):
+        super(OpenAIMiner, self).__init__(*args, **kwargs)
         if api_key is None and self.config.openai.api_key is None:
-            raise ValueError('the miner requires passing --openai.api_key as an argument of the config or to the constructor.')
+            raise ValueError(
+                "the miner requires passing --openai.api_key as an argument of the config or to the constructor."
+            )
         openai.api_key = api_key or self.config.openai.api_key
 
-    def forward( self, messages: List[Dict[str, str]]  ) -> str:
+    def forward(self, messages: List[Dict[str, str]]) -> str:
         resp = openai.ChatCompletion.create(
-            model = self.config.openai.model_name,
-            messages = messages,
-            temperature = self.config.openai.temperature,
-            max_tokens = self.config.openai.max_tokens,
-            top_p = self.config.openai.top_p,
-            frequency_penalty = self.config.openai.frequency_penalty,
-            presence_penalty = self.config.openai.presence_penalty,
-            n = self.config.openai.n,
-        )['choices'][0]['message']['content']
+            model=self.config.openai.model_name,
+            messages=messages,
+            temperature=self.config.openai.temperature,
+            max_tokens=self.config.openai.max_tokens,
+            top_p=self.config.openai.top_p,
+            frequency_penalty=self.config.openai.frequency_penalty,
+            presence_penalty=self.config.openai.presence_penalty,
+            n=self.config.openai.n,
+        )["choices"][0]["message"]["content"]
         return resp
 
-if __name__ == "__main__":  
+
+if __name__ == "__main__":
     with OpenAIMiner():
         while True:
-            print ( 'running...', time.time() )
-            time.sleep( 1 )
+            print("running...", time.time())
+            time.sleep(1)

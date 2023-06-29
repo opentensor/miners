@@ -21,21 +21,23 @@ import openminers
 import bittensor as bt
 from typing import List, Optional
 
+
 class MockSubtensor:
-
-    def __init__( self, config: "bt.Config" ):
+    def __init__(self, config: "bt.Config"):
         self.config = config
-        self.mock_metagraph = bt.subtensor( self.config ).metagraph( config.netuid )
+        self.mock_metagraph = bt.subtensor(self.config).metagraph(config.netuid)
         self.start_time = time.time()
-        
-    def serve_axon( self, netuid: int, axon: "bt.axon" ):
+
+    def serve_axon(self, netuid: int, axon: "bt.axon"):
         return True
 
-    def register( self, netuid: int, wallet: "bt.Wallet" ):
+    def register(self, netuid: int, wallet: "bt.Wallet"):
         return True
 
-    def get_current_block( self ):
-        return int( (time.time() - self.start_time) / 12 ) + self.mock_metagraph.block.item()
+    def get_current_block(self):
+        return (
+            int((time.time() - self.start_time) / 12) + self.mock_metagraph.block.item()
+        )
 
-    def metagraph( self, netuid: int ) -> "bt.Metagraph":
+    def metagraph(self, netuid: int) -> "bt.Metagraph":
         return self.mock_metagraph

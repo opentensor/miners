@@ -28,18 +28,23 @@ from typing import List, Dict
 # from datasets import load_dataset
 # DATASET = iter( load_dataset( 'squad_v2', split = 'train', streaming = True ).shuffle( buffer_size = 10000 ))
 
-def get_mock_query( ) -> List[Dict[str, str]]:
+
+def get_mock_query() -> List[Dict[str, str]]:
     prompt = """you are a chatbot that can come up with unique questions about many things."""
     message = "ask me a random question about anything"
-    roles = ['system', 'user']
-    messages = [ prompt, message ]
-    packed_messages = [ json.dumps({"role": role, "content": message}) for role, message in zip( roles,  messages )]
+    roles = ["system", "user"]
+    messages = [prompt, message]
+    packed_messages = [
+        json.dumps({"role": role, "content": message})
+        for role, message in zip(roles, messages)
+    ]
     return packed_messages, roles, messages
+
 
 def run():
     # Parse miner class.
-    MINER = getattr( openminers, sys.argv[2] )
-    N_STEPS = int(sys.argv[3]) 
+    MINER = getattr(openminers, sys.argv[1])
+    N_STEPS = int(sys.argv[2])
 
     # Load miner config
     config = MINER.config()
@@ -52,19 +57,20 @@ def run():
     config.wallet._mock = True
     config.axon.external_ip = "127.0.0.1"
     config.axon.port = 9090
-    bt.logging.success( f'Running benchmarks for miner: { sys.argv[1] }' )
+    bt.logging.success(f"Running benchmarks for miner: { sys.argv[1] }")
 
     # Instantiate the miner axon
     wallet = bt.wallet.mock()
-    axon = bt.axon( wallet = wallet, config = config, metagraph = None )
-    dendrite = bt.text_prompting( axon = axon.info(), keypair = wallet.hotkey )
-    bt.logging.success( f'dendrite: { dendrite }' )
+    axon = bt.axon(wallet=wallet, config=config, metagraph=None)
+    dendrite = bt.text_prompting(axon=axon.info(), keypair=wallet.hotkey)
+    bt.logging.success(f"dendrite: { dendrite }")
 
     # Instantiate miner.
-    with MINER( config = config, axon = axon, wallet = wallet ) as miner:
-        for step in range( N_STEPS ):
+    with MINER(config=config, axon=axon, wallet=wallet) as miner:
+        for step in range(N_STEPS):
             _, roles, messages = get_mock_query()
-            dendrite.forward( roles = roles, messages = messages, timeout = 1e6 )
+            dendrite.forward(roles=roles, messages=messages, timeout=1e6)
+
 
 if __name__ == "__main__":
     run()

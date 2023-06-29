@@ -27,49 +27,118 @@ from typing import List, Dict
 from transformers import AutoTokenizer, pipeline, StoppingCriteria, StoppingCriteriaList, AutoModelForCausalLM, AutoConfig
 from transformers.deepspeed import HfDeepSpeedConfig
 
-class StopOnTokens( StoppingCriteria ):
 
-    def __init__( self, stop_token_ids: List[int] ):
+class StopOnTokens(StoppingCriteria):
+    def __init__(self, stop_token_ids: List[int]):
         self.stop_token_ids = stop_token_ids
 
-    def __call__( self, input_ids: torch.LongTensor, scores: torch.FloatTensor, **kwargs ) -> bool:
+    def __call__(
+        self, input_ids: torch.LongTensor, scores: torch.FloatTensor, **kwargs
+    ) -> bool:
         for stop_id in self.stop_token_ids:
             if input_ids[0][-1] == stop_id:
                 return True
         return False
 
-class FalconMiner( openminers.BasePromptingMiner ):
 
+class FalconMiner(openminers.BasePromptingMiner):
     @classmethod
     def add_args( cls, parser: argparse.ArgumentParser ):
-        parser.add_argument( '--deployment_framework',  type=str, choices=['accelerate', 'deepspeed'], default="accelerate", help='Inference framework to use for multi-gpu inference')
-        parser.add_argument( '--use_8_bit', action='store_true', default=False, help='Whether to use int8 quantization or not.' )
-        parser.add_argument( '--use_4_bit',  action='store_true', default=False, help='Whether to use int4 quantization or not' )
-        parser.add_argument( '--falcon.model_name', type=str, default="tiiuae/falcon-7b-instruct", help='Name/path of model to load' )
-        parser.add_argument( '--falcon.device', type=int, help='Device to load model (integer GPU slot)', default=0 )
-        parser.add_argument( '--falcon.device_map', type=str, help='Device map for model', default="auto" )
-        parser.add_argument( '--falcon.max_length', type=int, help='Max tokens for model output.', default=100 )
-        parser.add_argument( '--falcon.temperature', type=float, help='Sampling temperature of model', default=0.5 )
-        parser.add_argument( '--falcon.top_k', type=int, help='Top k sampling of model', default=1 )
-        parser.add_argument( '--falcon.do_sample', action='store_true', default=False, help='Whether to use sampling or not (if not, uses greedy decoding).' )
-        parser.add_argument( '--falcon.do_prompt_injection', action='store_true', default=False, help='Whether to use a custom "system" prompt instead of the one sent by bittensor.' )
-        parser.add_argument( '--falcon.system_prompt', type=str, help='What prompt to replace the system prompt with', default= "A chat between a curious user and an artificial intelligence assistant.\nThe assistant gives helpful, detailed, and polite answers to the user's questions. " )
-        parser.add_argument( '--falcon.num_return_sequences', type=int, help='Number of sequences to return', default=1 )
-        parser.add_argument( '--falcon.repetition_penalty', type=float, help='Repetition penalty for model', default=1.9 )
+        parser.add_argument(
+            "--deployment_framework",
+            type=str, 
+            choices=["accelerate", "deepspeed"], 
+            default="accelerate", 
+            help="Inference framework to use for multi-gpu inference"
+        )
+        parser.add_argument( 
+            "--use_8_bit",  
+            action="store_true", 
+            default=False, 
+            help="Whether to use int8 quantization or not" 
+        )
+        parser.add_argument( 
+            "--use_4_bit",  
+            action="store_true", 
+            default=False, 
+            help="Whether to use int4 quantization or not" 
+        )
+        parser.add_argument(
+            "--falcon.model_name",
+            type=str,
+            default="tiiuae/falcon-7b-instruct",
+            help="Name/path of model to load",
+        )
+        parser.add_argument(
+            "--falcon.device",
+            type=int,
+            help="Device to load model (integer GPU slot)",
+            default=0,
+        )
+        parser.add_argument(
+            "--falcon.device_map", type=str, help="Device map for model", default=None
+        )
+        parser.add_argument(
+            "--falcon.max_length",
+            type=int,
+            help="Max tokens for model output.",
+            default=100,
+        )
+        parser.add_argument(
+            "--falcon.temperature",
+            type=float,
+            help="Sampling temperature of model",
+            default=0.5,
+        )
+        parser.add_argument(
+            "--falcon.top_k", type=int, help="Top k sampling of model", default=1
+        )
+        parser.add_argument(
+            "--falcon.do_sample",
+            action="store_true",
+            default=False,
+            help="Whether to use sampling or not (if not, uses greedy decoding).",
+        )
+        parser.add_argument(
+            "--falcon.do_prompt_injection",
+            action="store_true",
+            default=False,
+            help='Whether to use a custom "system" prompt instead of the one sent by bittensor.',
+        )
+        parser.add_argument(
+            "--falcon.system_prompt",
+            type=str,
+            help="What prompt to replace the system prompt with",
+            default="A chat between a curious user and an artificial intelligence assistant.\nThe assistant gives helpful, detailed, and polite answers to the user's questions. ",
+        )
+        parser.add_argument(
+            "--falcon.num_return_sequences",
+            type=int,
+            help="Number of sequences to return",
+            default=1,
+        )
+        parser.add_argument(
+            "--falcon.repetition_penalty",
+            type=float,
+            help="Repetition penalty for model",
+            default=1.9,
+        )
 
     @classmethod
-    def config( cls ) -> "bittensor.Config":
-        parser = argparse.ArgumentParser( description='Falcon Miner Config' )
-        cls.add_args( parser )
-        return bittensor.config( parser )
+    def config(cls) -> "bittensor.Config":
+        parser = argparse.ArgumentParser(description="Falcon Miner Config")
+        cls.add_args(parser)
+        return bittensor.config(parser)
 
-    def __init__( self, *args, **kwargs):
-        super( FalconMiner, self ).__init__( *args, **kwargs )
+    def __init__(self, *args, **kwargs):
+        super(FalconMiner, self).__init__(*args, **kwargs)
 
-        bittensor.logging.info( 'Loading ' + str( self.config.falcon.model_name ) )
-        self.tokenizer = AutoTokenizer.from_pretrained( self.config.falcon.model_name )
-        self.stop_token_ids = self.tokenizer.convert_tokens_to_ids( ["</s>","<|endoftext|>"] )
-        self.stop = StopOnTokens( self.stop_token_ids )
+        bittensor.logging.info("Loading " + str(self.config.falcon.model_name))
+        self.tokenizer = AutoTokenizer.from_pretrained(self.config.falcon.model_name)
+        self.stop_token_ids = self.tokenizer.convert_tokens_to_ids(
+            ["</s>", "<|endoftext|>"]
+        )
+        self.stop = StopOnTokens(self.stop_token_ids)
 
         if self.config.deployment_framework == "deepspeed":
             
@@ -175,26 +244,24 @@ class FalconMiner( openminers.BasePromptingMiner ):
             self.model = pipeline( "text-generation",  **kwargs )
             bittensor.logging.info( 'Model loaded!' )
 
-    def _process_history( self, history: List[str] ) -> str:
-        processed_history = ''
+    def _process_history(self, history: List[str]) -> str:
+        processed_history = ""
         if self.config.falcon.do_prompt_injection:
             processed_history += self.config.falcon.system_prompt
         for message in history:
-            if message['role'] == 'system':
+            if message["role"] == "system":
                 if not self.config.falcon.do_prompt_injection or message != history[0]:
-                    processed_history += '' + message['content'].strip() + ' '
-            if message['role'] == 'assistant':
-                processed_history += 'Assistant:' + message['content'].strip() + '</s>'
-            if message['role'] == 'user':
-                processed_history += 'User: ' + message['content'].strip() + ' '
+                    processed_history += "" + message["content"].strip() + " "
+            if message["role"] == "assistant":
+                processed_history += "Assistant:" + message["content"].strip() + "</s>"
+            if message["role"] == "user":
+                processed_history += "User: " + message["content"].strip() + " "
         return processed_history
 
-    def forward( self, messages: List[Dict[str, str]] ) -> str:
-        history = self._process_history( messages )
+    def forward(self, messages: List[Dict[str, str]]) -> str:
+        history = self._process_history(messages)
         prompt = history + "ASSISTANT:"
         
-        import time
-        start = time.time()
         if self.config.deployment_framework == "deepspeed":
             inputs = self.tokenizer.encode(history, return_tensors="pt").to(device=self.local_rank)
             with torch.no_grad():
@@ -213,17 +280,16 @@ class FalconMiner( openminers.BasePromptingMiner ):
                 repetition_penalty=self.config.falcon.repetition_penalty,
                 stopping_criteria=StoppingCriteriaList( [self.stop] ),
             )[0]['generated_text'].split(':')[-1].replace( str( history ), "")
-        end = time.time()
-        print(end - start)
 
         # Logging input and generation if debugging is active
-        bittensor.logging.debug( "Message: " + str( messages ) )
-        bittensor.logging.debug( "Generation: " + str( generation ) )
+        bittensor.logging.debug("Message: " + str(messages))
+        bittensor.logging.debug("Generation: " + str(generation))
         return generation
+
 
 if __name__ == "__main__":
     miner = FalconMiner()
     with miner:
         while True:
-            print ('running...', time.time() )
-            time.sleep( 1 )
+            print("running...", time.time())
+            time.sleep(1)
