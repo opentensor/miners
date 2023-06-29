@@ -2,4 +2,5 @@ deepspeed
 transformers==4.28.0
 einops
 accelerate
+bitsandbytes
 torch>=2.0.0,<=2.0.1

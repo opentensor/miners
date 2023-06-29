@@ -35,6 +35,8 @@ class LlamaMiner( openminers.BasePromptingMiner ):
     @classmethod
     def add_args( cls, parser: argparse.ArgumentParser ):
         parser.add_argument('--deployment_framework',  type=str, choices=['accelerate', 'deepspeed'], default="accelerate", help='Inference framework to use for multi-gpu inference')
+        parser.add_argument( '--use_8_bit', action='store_true', default=False, help='Whether to use int8 quantization or not.' )
+        parser.add_argument( '--use_4_bit',  action='store_true', default=False, help='Whether to use int4 quantization or not' )
         parser.add_argument('--llama.model_name',  type=str, default="huggyllama/llama-65b", help='Name/path of model to load')
         parser.add_argument('--llama.max_tokens', type=int, default=20, help="The maximum number of tokens to generate in the completion.")
         parser.add_argument('--llama.do_sample', type=bool, default=True, help='Description of do_sample')
@@ -132,7 +134,18 @@ class LlamaMiner( openminers.BasePromptingMiner ):
         
         else:
 
-            self.model = AutoModelForCausalLM.from_pretrained(self.config.llama.model_name, device_map="auto", torch_dtype=torch.float16, load_in_8bit=True)
+            if self.config.use_8_bit and self.config.use_4_bit:
+                raise ValueError(
+                    "You can't use 8 bit and 4 bit precision at the same time"
+                )
+
+            self.model = AutoModelForCausalLM.from_pretrained(
+                self.config.llama.model_name, 
+                device_map="auto", 
+                torch_dtype=torch.float16, 
+                load_in_8bit=self.config.use_8_bit, 
+                load_in_4bit=self.config.use_4_bit,
+            )
 
             self.pipe = pipeline( 
                 "text-generation",

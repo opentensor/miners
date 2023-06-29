@@ -34,6 +34,8 @@ class BloomChatMiner( openminers.BasePromptingMiner ):
     @classmethod
     def add_args( cls, parser: argparse.ArgumentParser ):
         parser.add_argument('--deployment_framework',  type=str, choices=['accelerate', 'deepspeed'], default="accelerate", help='Inference framework to use for multi-gpu inference')
+        parser.add_argument( '--use_8_bit', action='store_true', default=False, help='Whether to use int8 quantization or not.' )
+        parser.add_argument( '--use_4_bit',  action='store_true', default=False, help='Whether to use int4 quantization or not' )
         parser.add_argument('--bloom.model_name', type=str, default="sambanovasystems/BLOOMChat-176B-v1", help='Name/path of model to load' )
         parser.add_argument('--bloom.max_new_tokens', type=int, default=100, help='Number of new tokens to generate' )
 
@@ -127,7 +129,12 @@ class BloomChatMiner( openminers.BasePromptingMiner ):
         else:
             self.tokenizer = AutoTokenizer.from_pretrained(self.config.bloom.model_name)
 
-            self.model = AutoModelForCausalLM.from_pretrained(self.config.bloom.model_name, device_map="auto", load_in_8bit=True)
+            self.model = AutoModelForCausalLM.from_pretrained(
+                self.config.bloom.model_name, 
+                device_map="auto", 
+                load_in_8bit=self.config.use_8_bit, 
+                load_in_4bit=self.config.use_4_bit,
+            )
 
             self.pipe = pipeline( 
                 "text-generation",

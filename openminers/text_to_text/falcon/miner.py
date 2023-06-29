@@ -43,6 +43,8 @@ class FalconMiner( openminers.BasePromptingMiner ):
     @classmethod
     def add_args( cls, parser: argparse.ArgumentParser ):
         parser.add_argument( '--deployment_framework',  type=str, choices=['accelerate', 'deepspeed'], default="accelerate", help='Inference framework to use for multi-gpu inference')
+        parser.add_argument( '--use_8_bit', action='store_true', default=False, help='Whether to use int8 quantization or not.' )
+        parser.add_argument( '--use_4_bit',  action='store_true', default=False, help='Whether to use int4 quantization or not' )
         parser.add_argument( '--falcon.model_name', type=str, default="tiiuae/falcon-7b-instruct", help='Name/path of model to load' )
         parser.add_argument( '--falcon.device', type=int, help='Device to load model (integer GPU slot)', default=0 )
         parser.add_argument( '--falcon.device_map', type=str, help='Device map for model', default="auto" )
@@ -132,7 +134,7 @@ class FalconMiner( openminers.BasePromptingMiner ):
             dschf = HfDeepSpeedConfig(ds_config) # keep this object alive
 
             # now a model can be loaded.
-            self.model = AutoModelForCausalLM.from_pretrained(model_name, trust_remote_code=True)
+            self.model = AutoModelForCausalLM.from_pretrained(self.config.falcon.model_name, trust_remote_code=True)
 
             # initialise deepspeed ZeRO
             self.ds_engine = deepspeed.initialize(model=self.model,
@@ -144,11 +146,23 @@ class FalconMiner( openminers.BasePromptingMiner ):
 
 
         else:
+            if self.config.use_8_bit and self.config.use_4_bit:
+                raise ValueError(
+                    "You can't use 8 bit and 4 bit precision at the same time"
+                )
+            
+            self.model = AutoModelForCausalLM.from_pretrained(
+                self.config.falcon.model_name, 
+                load_in_8bit=self.config.use_8_bit, 
+                load_in_4bit=self.config.use_4_bit,
+                trust_remote_code=True,
+                device_map=self.config.falcon.device_map
+            )
+
             kwargs = dict(
-                model=self.config.falcon.model_name,
+                model=self.model,
                 tokenizer=self.tokenizer,
                 torch_dtype=torch.bfloat16,
-                trust_remote_code=True,
                 temperature=self.config.falcon.temperature,
                 do_sample=self.config.falcon.do_sample,
                 device_map=self.config.falcon.device_map
@@ -158,7 +172,6 @@ class FalconMiner( openminers.BasePromptingMiner ):
                 kwargs['device_map'] = self.config.falcon.device_map
             else:
                 kwargs['device'] = self.config.falcon.device
-
             self.model = pipeline( "text-generation",  **kwargs )
             bittensor.logging.info( 'Model loaded!' )
 
@@ -180,6 +193,8 @@ class FalconMiner( openminers.BasePromptingMiner ):
         history = self._process_history( messages )
         prompt = history + "ASSISTANT:"
         
+        import time
+        start = time.time()
         if self.config.deployment_framework == "deepspeed":
             inputs = self.tokenizer.encode(history, return_tensors="pt").to(device=self.local_rank)
             with torch.no_grad():
@@ -198,6 +213,8 @@ class FalconMiner( openminers.BasePromptingMiner ):
                 repetition_penalty=self.config.falcon.repetition_penalty,
                 stopping_criteria=StoppingCriteriaList( [self.stop] ),
             )[0]['generated_text'].split(':')[-1].replace( str( history ), "")
+        end = time.time()
+        print(end - start)
 
         # Logging input and generation if debugging is active
         bittensor.logging.debug( "Message: " + str( messages ) )

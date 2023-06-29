@@ -4,7 +4,7 @@ BLOOMChat-176B-v1 completion miner for bittensor's prompting network.
 
 # Set Up
 Install the required libraries:
-```
+```bash
 python3 -m pip install -r  openminers/text_to_text/bloom/requirements.txt
 ```
 As per the [bitsandbytes repo](https://github.com/TimDettmers/bitsandbytes) sometimes installing `bitsandbytes ` using pypi can fail. If that happens please file a bug report with  `python -m bitsandbytes ` information to the bitsandbytes repo and instead try installing from source:
@@ -17,6 +17,10 @@ cd bitsandbytes
 # if you do not know what CUDA you have, try looking at the output of: python -m bitsandbytes
 CUDA_VERSION=117 make cuda11x
 python setup.py install
+```
+If using `int4` quantization for inference then you also need to install the latest `transformers` dev branch from source.
+```bash
+pip install git+https://github.com/huggingface/transformers
 ```
 
 # Example Usage for Multi-GPU Inference
@@ -31,7 +35,8 @@ deepspeed --num_gpus 8 openminers/text_to_text/bloom/miner.py --deployment_frame
 
 # Full Usage
 ```
-usage: miner.py [-h] [--deployment_framework DEPLOYMENT_FRAMEWOR] [--bloomchat.model_name BLOOMCHAT.MODEL_NAME] 
+usage: miner.py [-h] [--deployment_framework DEPLOYMENT_FRAMEWOR] [--use_8_bit USE_8_BIT] [--use_4_bit USE_4_BIT] 
+                 [--bloomchat.model_name BLOOMCHAT.MODEL_NAME] 
                  [--bloomchat.max_new_tokens BLOOMCHAT.MAX_NEW_TOKENS] [--netuid NETUID] [--miner.name NEURON.NAME]
                  [--miner.blocks_per_epoch NEURON.BLOCKS_PER_EPOCH] [--miner.no_set_weights]
                  [--miner.max_batch_size NEURON.MAX_BATCH_SIZE] [--miner.max_sequence_len NEURON.MAX_SEQUENCE_LEN]

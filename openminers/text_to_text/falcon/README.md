@@ -4,7 +4,7 @@ Falcon miner for bittensor's prompting network.
 
 # Set Up
 Install the required libraries:
-```
+```bash
 python3 -m pip install -r  openminers/text_to_text/bloom/requirements.txt
 ```
 As per the [bitsandbytes repo](https://github.com/TimDettmers/bitsandbytes) sometimes installing `bitsandbytes ` using pypi can fail. If that happens please file a bug report with  `python -m bitsandbytes ` information to the bitsandbytes repo and instead try installing from source:
@@ -17,6 +17,10 @@ cd bitsandbytes
 # if you do not know what CUDA you have, try looking at the output of: python -m bitsandbytes
 CUDA_VERSION=117 make cuda11x
 python setup.py install
+```
+If using `int4` quantization for inference then you also need to install the latest `transformers` dev branch from source.
+```bash
+pip install git+https://github.com/huggingface/transformers
 ```
 
 # Example Usage for Multi-GPU Inference
@@ -31,7 +35,8 @@ deepspeed --num_gpus 4 openminers/text_to_text/falcon/miner.py --deployment_fram
 
 # Full Usage
 ```
-usage: miner.py [-h] [--deployment_framework DEPLOYMENT_FRAMEWOR] [--falcon.model_name FALCON.MODEL_NAME] 
+usage: miner.py [-h] [--deployment_framework DEPLOYMENT_FRAMEWOR] [--use_8_bit USE_8_BIT]  [--use_4_bit USE_4_BIT] 
+                 [--falcon.model_name FALCON.MODEL_NAME] 
                  [--falcon.device FALCON.DEVICE]
                  [--falcon.device_map FALCON.DEVICE_MAP] [--falcon.max_length FALCON.MAX_LENGTH]
                  [--falcon.temperature FALCON.TEMPERATURE] [--falcon.top_p FALCON.TOP_P]
