@@ -31,11 +31,6 @@ from .config import config, check_config
 
 class BasePromptingMiner( BaseMiner, ABC ):
 
-    # @classmethod
-    # def config( cls ) -> "bt.Config":
-    #     parser = argparse.ArgumentParser()
-    #     cls.add_super_args( parser )
-    #     return bt.config( parser )
     @classmethod
     def config( cls ) -> "bt.Config": return config( cls )
 

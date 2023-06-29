@@ -2,20 +2,32 @@
 ## Falcon Miner
 Falcon miner for bittensor's prompting network. 
 
-# Example Usage
+# Set Up
 Install the required libraries:
 ```
-python3 -m pip install -r  openminers/text_to_text/falcon/requirements.txt
+python3 -m pip install -r  openminers/text_to_text/bloom/requirements.txt
 ```
+As per the [bitsandbytes repo](https://github.com/TimDettmers/bitsandbytes) sometimes installing `bitsandbytes ` using pypi can fail. If that happens please file a bug report with  `python -m bitsandbytes ` information to the bitsandbytes repo and instead try installing from source:
+```bash
+git clone https://github.com/timdettmers/bitsandbytes.git
+cd bitsandbytes
+
+# CUDA_VERSIONS in {110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 120}
+# make argument in {cuda110, cuda11x, cuda12x}
+# if you do not know what CUDA you have, try looking at the output of: python -m bitsandbytes
+CUDA_VERSION=117 make cuda11x
+python setup.py install
+```
+
+# Example Usage for Multi-GPU Inference
 1. using HF accelerate inference (default)
 ```
-python3 openminers/text_to_text/bloom/miner.py --deployment_framework accelerate --falcon.model_name tiiuae/falcon-40b-instruct
+python3 openminers/text_to_text/llama/miner.py llama --deployment_framework accelerate
 ```
 2. using DS inference
 ```
 deepspeed --num_gpus 4 openminers/text_to_text/falcon/miner.py --deployment_framework deepspeed --falcon.model_name tiiuae/falcon-40b-instruct 
 ```
-
 
 # Full Usage
 ```
