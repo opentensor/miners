@@ -76,7 +76,7 @@ class FalconMiner(openminers.BasePromptingMiner):
             default=0,
         )
         parser.add_argument(
-            "--falcon.device_map", type=str, help="Device map for model", default=None
+            "--falcon.device_map", type=str, help="Device map for model", default="auto"
         )
         parser.add_argument(
             "--falcon.max_length",
