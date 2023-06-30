@@ -1,0 +1,4 @@
+deepspeed
+accelerate
+bitsandbytes
+scipy==1.11.1

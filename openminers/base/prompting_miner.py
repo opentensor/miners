@@ -26,6 +26,7 @@ from .forward import forward
 from .priority import priority
 from .blacklist import blacklist
 from .miner import BaseMiner
+from .config import config, check_config
 
 
 class BasePromptingMiner(BaseMiner, ABC):
