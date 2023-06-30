@@ -5,7 +5,7 @@ Llama completion miner for bittensor's prompting network.
 # Set Up
 Install the required libraries:
 ```bash
-python3 -m pip install -r  openminers/text_to_text/bloom/requirements.txt
+python3 -m pip install -r  openminers/text_to_text/llama/requirements.txt
 ```
 As per the [bitsandbytes repo](https://github.com/TimDettmers/bitsandbytes) sometimes installing `bitsandbytes ` using pypi can fail. If that happens please file a bug report with  `python -m bitsandbytes ` information to the bitsandbytes repo and instead try installing from source:
 ```bash
