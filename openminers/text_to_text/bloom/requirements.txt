@@ -1,0 +1,6 @@
+accelerate
+bitsandbytes
+einops
+deepspeed
+scipy
+transformers

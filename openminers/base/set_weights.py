@@ -24,7 +24,8 @@ def set_weights(
             wallet=wallet,
             version_key=1,
         )
-        wandb.log({"set_weights": 1})
+        if wandb_on:
+            wandb.log({"set_weights": 1})
 
     except Exception as e:
         if wandb_on:
