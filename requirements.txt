@@ -1,6 +1,7 @@
-pytest
 bittensor
-wandb
-tqdm
-datasets
-openai
+pytest==7.4.0
+wandb==0.15.4
+tqdm==4.64.1
+datasets==2.12.0
+openai==0.27.8
+sentencepiece==0.1.99

@@ -22,39 +22,52 @@ import openminers
 from typing import List, Dict
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 
-class RobertMyersMiner( openminers.BasePromptingMiner ):
 
+class RobertMyersMiner(openminers.BasePromptingMiner):
     @classmethod
-    def add_args( cls, parser: argparse.ArgumentParser ):
+    def add_args(cls, parser: argparse.ArgumentParser):
         pass
 
-    def __init__( self, *args, **kwargs):
-        super( RobertMyersMiner, self ).__init__( *args, **kwargs )
-        tokenizer = AutoTokenizer.from_pretrained( "robertmyers/bpt-sft" )
-        self.model = AutoModelForCausalLM.from_pretrained(  "robertmyers/bpt-sft", torch_dtype=torch.float16 )
-        self.model.to( "cuda" )
-        self.pipe = pipeline( "text-generation", self.model, tokenizer=tokenizer, device = 0, max_new_tokens = 256 )
+    def __init__(self, *args, **kwargs):
+        super(RobertMyersMiner, self).__init__(*args, **kwargs)
+        tokenizer = AutoTokenizer.from_pretrained("robertmyers/bpt-sft")
+        self.model = AutoModelForCausalLM.from_pretrained(
+            "robertmyers/bpt-sft", torch_dtype=torch.float16
+        )
+        self.model.to("cuda")
+        self.pipe = pipeline(
+            "text-generation",
+            self.model,
+            tokenizer=tokenizer,
+            device=0,
+            max_new_tokens=256,
+        )
 
     @staticmethod
-    def _process_history( history: List[ Dict[str, str] ] ) -> str:
-        processed_history = ''
+    def _process_history(history: List[Dict[str, str]]) -> str:
+        processed_history = ""
         for message in history:
-            if message['role'] == 'system':
-                processed_history += 'system: ' + message['content'] + '\n'
-            if message['role'] == 'assistant':
-                processed_history += 'assistant: ' + message['content'] + '\n'
-            if message['role'] == 'user':
-                processed_history += 'user: ' + message['content'] + '\n'
+            if message["role"] == "system":
+                processed_history += "system: " + message["content"] + "\n"
+            if message["role"] == "assistant":
+                processed_history += "assistant: " + message["content"] + "\n"
+            if message["role"] == "user":
+                processed_history += "user: " + message["content"] + "\n"
         return processed_history
 
-    def forward( self, messages: List[Dict[str, str]]  ) -> str:
+    def forward(self, messages: List[Dict[str, str]]) -> str:
         history = self._process_history(messages)
-        resp = self.pipe( history )[0]['generated_text'].split(':')[-1].replace( str( history ), "")
+        resp = (
+            self.pipe(history)[0]["generated_text"]
+            .split(":")[-1]
+            .replace(str(history), "")
+        )
         return resp
 
-if __name__ == "__main__":  
+
+if __name__ == "__main__":
     miner = RobertMyersMiner()
     with miner:
         while True:
-            print ('running...', time.time())
+            print("running...", time.time())
             time.sleep(1)

@@ -22,37 +22,46 @@ import openminers
 from typing import List, Union, Tuple
 
 
-class TemplateEmbeddingMiner( openminers.BaseEmbeddingMiner ):
-
+class TemplateEmbeddingMiner(openminers.BaseEmbeddingMiner):
     @classmethod
-    def check_config( cls, config: 'bittensor.Config' ):
+    def check_config(cls, config: "bittensor.Config"):
         pass
 
     @classmethod
-    def config( cls ) -> "bittensor.Config":
-        parser = argparse.ArgumentParser( description='Template Embedding Miner Configs' )
-        cls.add_args( parser )
-        return bittensor.config( parser )
-    
+    def config(cls) -> "bittensor.Config":
+        parser = argparse.ArgumentParser(description="Template Embedding Miner Configs")
+        cls.add_args(parser)
+        return bittensor.config(parser)
+
     @classmethod
-    def add_args( cls, parser: argparse.ArgumentParser ):
-        parser.add_argument( '--template_arg', default='template_default', type=str, help='Template argument.' )
+    def add_args(cls, parser: argparse.ArgumentParser):
+        parser.add_argument(
+            "--template_arg",
+            default="template_default",
+            type=str,
+            help="Template argument.",
+        )
 
-    def __init__( self, *args, **kwargs ):
-        super( TemplateEmbeddingMiner ).__init__( *args, **kwargs )
+    def __init__(self, *args, **kwargs):
+        super(TemplateEmbeddingMiner).__init__(*args, **kwargs)
         self.template_arg = self.config.miner.template_arg
+        # Load your models here
 
-    def blacklist( self, forward_call: "bittensor.TextToEmbeddingForwardCall" ) -> Union[ Tuple[bool, str], bool ]:
+    def blacklist(
+        self, forward_call: "bittensor.TextToEmbeddingForwardCall"
+    ) -> Union[Tuple[bool, str], bool]:
+        # Implement blacklist logic here
         return False
-    
-    def priority( self, forward_call: "bittensor.TextToEmbeddingForwardCall" ) -> float:
-        return 0.0        
 
-    def forward( self, text: List[str] ):
-        return torch.zeros( ( self.config.miner.embedding_size ) )
+    def priority(self, forward_call: "bittensor.TextToEmbeddingForwardCall") -> float:
+        # Implement priority logic here
+        return 0.0
+
+    def forward(self, text: List[str]):
+        # Implement forward modality-specific logic here
+        return torch.zeros((self.config.miner.embedding_size))
 
 
-with TemplateEmbeddingMiner(): 
-    while True: 
-        time.sleep( 1 )
-
+with TemplateEmbeddingMiner():
+    while True:
+        time.sleep(1)

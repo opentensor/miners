@@ -21,27 +21,28 @@ import bittensor
 import openminers
 from typing import List, Dict
 
-class TemplateMiner( openminers.BasePromptingMiner ):
+
+class TemplateMiner(openminers.BasePromptingMiner):
+    @classmethod
+    def add_args(cls, parser: argparse.ArgumentParser):
+        parser.add_argument("--test", default="test", type=str, help="test argument")
 
     @classmethod
-    def add_args( cls, parser: argparse.ArgumentParser ):
-        parser.add_argument( '--test', default='test', type=str, help='test argument' )
+    def config(cls) -> "bittensor.Config":
+        parser = argparse.ArgumentParser(description="Template Configs")
+        cls.add_args(parser)
+        return bittensor.config(parser)
 
-    @classmethod
-    def config( cls ) -> "bittensor.Config":
-        parser = argparse.ArgumentParser( description='Template Configs' )
-        cls.add_args( parser )
-        return bittensor.config( parser )
+    def forward(self, messages: List[Dict[str, str]]) -> str:
+        return "Hello World!"
 
-    def forward( self, messages: List[Dict[str, str]] ) -> str:
-        return 'Hello World!'
-    
-    def __init__( self, *args, **kwargs ):
-        super( TemplateMiner, self ).__init__( *args, **kwargs )
+    def __init__(self, *args, **kwargs):
+        super(TemplateMiner, self).__init__(*args, **kwargs)
+
 
 if __name__ == "__main__":
     miner = TemplateMiner()
     with miner:
         while True:
-            print ( 'running...', time.time() )
-            time.sleep( 1 )
+            print("running...", time.time())
+            time.sleep(1)

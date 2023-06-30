@@ -26,30 +26,34 @@ from .priority import priority
 from .blacklist import blacklist
 from .miner import BaseMiner
 
-class BaseEmbeddingMiner( BaseMiner, ABC ):
 
-    def __init__( self, *args, **kwargs ):
-        super( BaseEmbeddingMiner, self ).__init__( *args, **kwargs )
+class BaseEmbeddingMiner(BaseMiner, ABC):
+    def __init__(self, *args, **kwargs):
+        super(BaseEmbeddingMiner, self).__init__(*args, **kwargs)
 
-        class Synapse( bt.TextToEmbeddingSynapse ):
-            
+        class Synapse(bt.TextToEmbeddingSynapse):
+
             # Build priority function.
-            def priority( _, forward_call: "bt.TextToEmbeddingForwardCall" ) -> float:
-                return priority( self, self.priority, forward_call )
+            def priority(_, forward_call: "bt.TextToEmbeddingForwardCall") -> float:
+                return priority(self, self.priority, forward_call)
                 # return 0.0
-            
+
             # Build blacklist function.
-            def blacklist( _, forward_call: "bt.TextToEmbeddingForwardCall" ) -> Union[ Tuple[bool, str], bool ]:
-                return blacklist( self, self.blacklist, forward_call )
+            def blacklist(
+                _, forward_call: "bt.TextToEmbeddingForwardCall"
+            ) -> Union[Tuple[bool, str], bool]:
+                return blacklist(self, self.blacklist, forward_call)
 
             # Build forward function.
-            def forward( _, text: List[str] ) -> str:
-                return forward( self, self.forward, text )    
+            def forward(_, text: List[str]) -> str:
+                return forward(self, self.forward, text)
 
             # Build backward function.
             # TODO(const): accept this.
-            def backward( self, text: List[str], response: str, rewards: torch.FloatTensor ) -> str: 
+            def backward(
+                self, text: List[str], response: str, rewards: torch.FloatTensor
+            ) -> str:
                 pass
-                  
+
         # Instantiate synapse.
-        self.synapse = Synapse( axon = self.axon )
+        self.synapse = Synapse(axon=self.axon)
