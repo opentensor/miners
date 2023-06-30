@@ -175,11 +175,7 @@ class LlamaMiner( openminers.BasePromptingMiner ):
             with torch.no_grad():
                 outputs = self.ds_engine.module.generate(inputs, max_length= 60)
             resp = self.tokenizer.decode(outputs[0], skip_special_tokens=True).replace( str( history ), "")
-            print(resp)
-            t_generate_span = time.time() - t_generate_start
-            print(t_generate_span)
         else:
-            t_generate_start = time.time()
             resp = self.pipe( 
                 history, 
                 max_length=200,
@@ -188,9 +184,6 @@ class LlamaMiner( openminers.BasePromptingMiner ):
                 num_return_sequences=1,
                 eos_token_id=self.tokenizer.eos_token_id, 
             )[0]['generated_text'].split(':')[-1].replace( str( history ), "")
-            t_generate_span = time.time() - t_generate_start
-            print(resp)
-            print(t_generate_span)
 
         # Logging input and generation if debugging is active
         bittensor.logging.debug( "Message: " + str( messages ) )
@@ -198,10 +191,8 @@ class LlamaMiner( openminers.BasePromptingMiner ):
         return resp
 
 if __name__ == "__main__":  
-    messages = [{"role":"system", "content":"you are a chatbot that can come up with unique questions about many things."}, {"role":"user", "content":"ask me a random question about anything"}]
-    # messages = [ prompt, message ]
-    print(LlamaMiner().forward(messages))
-    # with LlamaMiner():
-    #     while True:
-    #         print ('running...', time.time() )
-    #         time.sleep( 1 )
+    miner = LlamaMiner()
+    with miner:
+        while True:
+            print ('running...', time.time() )
+            time.sleep( 1 )
