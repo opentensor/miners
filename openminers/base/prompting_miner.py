@@ -23,6 +23,7 @@ from abc import ABC
 from typing import List, Dict, Union, Tuple
 
 from .forward import forward
+from .backward import backward
 from .priority import priority
 from .blacklist import blacklist
 from .miner import BaseMiner
@@ -82,7 +83,7 @@ class BasePromptingMiner(BaseMiner, ABC):
                 response: str,
                 rewards: torch.FloatTensor,
             ) -> str:
-                pass
+                return backward(self, self.backward, messages, response, rewards)
 
         # Instantiate synapse.
         self.synapse = Synapse(axon=self.axon)

@@ -43,6 +43,10 @@ class BaseMiner(ABC):
     def forward(self, messages: List[Dict[str, str]]) -> str:
         ...
 
+    @abstractmethod
+    def backward(self, messages: List[Dict[str, str]], response: str, rewards: "torch.FloatTensor") -> str:
+        ...        
+
     def priority(self, forward_call: "bt.TextPromptingForwardCall") -> float:
         raise NotImplementedError("priority not implemented in subclass")
 
@@ -80,8 +84,8 @@ class BaseMiner(ABC):
             self.subtensor = subtensor or bt.subtensor(self.config)
 
         # Instantiate metagraph.
-        self.metagraph = self.subtensor.metagraph(self.config.netuid, sync=False)
-        self.metagraph.sync(lite = True, subtensor=self.subtensor)
+        self.metagraph = self.subtensor.metagraph(self.config.netuid)
+        # self.metagraph.sync(lite = True, subtensor=self.subtensor)
 
         # Instantiate wallet.
         self.wallet = wallet or bt.wallet(self.config)

@@ -138,7 +138,7 @@ def add_args(cls, parser: argparse.ArgumentParser):
         default=None,
     )
     parser.add_argument(
-        "--wandb.entity",
+        "--wandb.entity∆",
         type=str,
         help="An entity is a username or team name where youre sending runs.",
         default=None,
