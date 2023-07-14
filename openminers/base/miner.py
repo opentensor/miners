@@ -80,7 +80,7 @@ class BaseMiner(ABC):
             self.subtensor = subtensor or bt.subtensor(self.config)
 
         # Instantiate metagraph.
-        self.metagraph = self.subtensor.metagraph(self.config.netuid, sync=False)
+        self.metagraph = self.subtensor.metagraph(self.config.netuid)
         self.metagraph.sync(lite = True, subtensor=self.subtensor)
 
         # Instantiate wallet.
@@ -93,15 +93,16 @@ class BaseMiner(ABC):
 
         # Init wandb.
         if self.config.wandb.on:
-            wandb.init(
+            tags = [self.wallet.hotkey.ss58_address, f'netuid_{self.config.netuid}']
+            self.wandb_run = wandb.init(
                 project=self.config.wandb.project_name,
                 entity=self.config.wandb.entity,
                 config=self.config,
                 mode="online" if self.config.wandb.on else "offline",
                 dir=self.config.miner.full_path,
                 magic=True,
+                tags=tags,
             )
-
         # Instantiate runners.
         self.should_exit: bool = False
         self.is_running: bool = False
