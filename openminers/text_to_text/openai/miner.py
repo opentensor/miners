@@ -87,7 +87,7 @@ class OpenAIMiner(openminers.BasePromptingMiner):
             raise ValueError(
                 "OpenAI API key is None: the miner requires an `OPENAI_API_KEY` defined in the environment variables or as an direct argument into the constructor."
             )
-        self.wandb_run.tags.append("openai_miner")
+        self.wandb_run.tags = self.wandb_run.tags + ("openai_miner",)
         openai.api_key = api_key
 
     def forward(self, messages: List[Dict[str, str]]) -> str:
