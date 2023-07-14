@@ -10,7 +10,14 @@ This repository contains a Bittensor Miner that uses OpenAI's GPT-3.5-turbo mode
 
 1. Clone the repository
 2. Install the required packages with `pip install -r requirements.txt`
-3. Set your OpenAI API key in the `api_key` argument when running the script
+3. Ensure that you have your OpenAI key in your os environment variable
+```bash
+# Sets your openai key in os envs variable
+export OPENAI_API_KEY='your_openai_key_here'
+
+# Verifies if openai key is set correctly
+echo $OPENAI_API_KEY
+```
 
 For more configuration options related to the wallet, axon, subtensor, logging, and metagraph, please refer to the Bittensor documentation.
 
@@ -20,12 +27,13 @@ To run the OpenAI Bittensor Miner with default settings, use the following comma
 
 ```
 python3 -m pip install -r openminers/text_to_text/miner/openai/requirements.txt 
-python3 openminers/text_to_text/miner/openai/miner.py --openai.api_key <your OpenAI api_key>
+export OPENAI_API_KEY='sk-yourkey'
+python3 openminers/text_to_text/miner/openai/miner.py
 ```
 
 # Full Usage
 ```
-usage: miner.py [-h] [--openai.api_key OPENAI.API_KEY] [--openai.suffix OPENAI.SUFFIX] [--openai.max_tokens OPENAI.MAX_TOKENS]
+usage: miner.py [-h] [--openai.suffix OPENAI.SUFFIX] [--openai.max_tokens OPENAI.MAX_TOKENS]
                  [--openai.temperature OPENAI.TEMPERATURE] [--openai.top_p OPENAI.TOP_P] [--openai.n OPENAI.N]
                  [--openai.presence_penalty OPENAI.PRESENCE_PENALTY] [--openai.frequency_penalty OPENAI.FREQUENCY_PENALTY]
                  [--openai.model_name OPENAI.MODEL_NAME] [--netuid NETUID] [--miner.name NEURON.NAME]
@@ -47,9 +55,7 @@ usage: miner.py [-h] [--openai.api_key OPENAI.API_KEY] [--openai.suffix OPENAI.S
                  [--logging.logging_dir LOGGING.LOGGING_DIR] [--metagraph._mock] [--config CONFIG] [--strict]
 
 optional arguments:
-  -h, --help            show this help message and exit
-  --openai.api_key OPENAI.API_KEY
-                        openai api key
+  -h, --help            show this help message and exit  
   --openai.suffix OPENAI.SUFFIX
                         The suffix that comes after a completion of inserted text.
   --openai.max_tokens OPENAI.MAX_TOKENS

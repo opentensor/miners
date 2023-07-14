@@ -14,7 +14,7 @@
 # THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
-
+import os
 import time
 import openai
 import argparse
@@ -25,8 +25,7 @@ from typing import List, Dict, Optional
 
 class OpenAIMiner(openminers.BasePromptingMiner):
     @classmethod
-    def add_args(cls, parser: argparse.ArgumentParser):
-        parser.add_argument("--openai.api_key", type=str, help="openai api key")
+    def add_args(cls, parser: argparse.ArgumentParser):        
         parser.add_argument(
             "--openai.suffix",
             type=str,
@@ -84,11 +83,12 @@ class OpenAIMiner(openminers.BasePromptingMiner):
 
     def __init__(self, api_key: Optional[str] = None, *args, **kwargs):
         super(OpenAIMiner, self).__init__(*args, **kwargs)
-        if api_key is None and self.config.openai.api_key is None:
+        if api_key is None:
             raise ValueError(
-                "the miner requires passing --openai.api_key as an argument of the config or to the constructor."
+                "OpenAI API key is None: the miner requires an `OPENAI_API_KEY` defined in the environment variables or as an direct argument into the constructor."
             )
-        openai.api_key = api_key or self.config.openai.api_key
+        self.wandb_run.tags.append("openai_miner")
+        openai.api_key = api_key
 
     def forward(self, messages: List[Dict[str, str]]) -> str:
         resp = openai.ChatCompletion.create(
@@ -105,7 +105,9 @@ class OpenAIMiner(openminers.BasePromptingMiner):
 
 
 if __name__ == "__main__":
-    with OpenAIMiner():
+    openai_api_key = os.getenv('OPENAI_API_KEY')
+
+    with OpenAIMiner(api_key=openai_api_key):
         while True:
             print("running...", time.time())
             time.sleep(1)
