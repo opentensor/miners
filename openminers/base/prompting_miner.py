@@ -20,7 +20,7 @@ import argparse
 import bittensor as bt
 
 from abc import ABC
-from typing import List, Dict, Union, Tuple
+from typing import List, Dict, Union, Tuple, Callable, Union
 
 from .forward import forward
 from .priority import priority
@@ -71,8 +71,8 @@ class BasePromptingMiner(BaseMiner, ABC):
                 return blacklist(self, self.blacklist, forward_call)
 
             # Build forward function.
-            def forward(_, messages: List[Dict[str, str]]) -> str:
-                return forward(self, self.forward, messages)
+            def forward(_, messages: List[Dict[str, str]], log_data: Dict[str, Union[str, float]] = None) -> str:
+                return forward(self, self.forward, messages, log_data)
 
             # Build backward function.
             # TODO(const): accept this.
